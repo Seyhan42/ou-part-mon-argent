@@ -1,9 +1,93 @@
-<nav>
-  <a href="index.html">Accueil</a>
-  <a href="test.html">Test gratuit</a>
-  <a href="tarifs.html">Tarifs</a>
-  <a href="login.html">Connexion</a>
-</nav>
-<hr>
-<link rel="stylesheet" href="css/style.css">
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Tarifs — Où part mon argent ?</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
 
+<header class="header">
+  <div class="brand">
+    <div class="logo">€</div>
+    <div>
+      <div class="brand-title">Où part mon argent ?</div>
+      <div class="brand-subtitle">Tarifs</div>
+    </div>
+  </div>
+
+  <nav class="nav">
+    <a class="nav-link" href="index.html">Accueil</a>
+    <a class="nav-link" href="test.html">Test gratuit</a>
+    <a class="nav-link active" href="tarifs.html">Tarifs</a>
+    <a class="nav-link" href="login.html">Connexion</a>
+  </nav>
+</header>
+
+<main class="container">
+  <section class="hero compact">
+    <h1>Tarifs simples</h1>
+    <p class="lead">Commencez gratuitement. Passez à l’abonnement quand vous voulez un vrai suivi.</p>
+  </section>
+
+  <section class="grid-3">
+    <div class="card pricing">
+      <h2>Gratuit</h2>
+      <p class="price">0 €</p>
+      <ul class="list">
+        <li>Test rapide</li>
+        <li>Minimum vital estimé</li>
+        <li>Reste à vivre estimé</li>
+      </ul>
+      <a class="btn btn-ghost full" href="test.html">Faire le test</a>
+    </div>
+
+    <div class="card pricing highlight">
+      <h2>Essentiel</h2>
+      <p class="price">3,99 € <span class="muted">/ mois</span></p>
+      <ul class="list">
+        <li>Dashboard personnel</li>
+        <li>Minimum vital précis semaine/mois</li>
+        <li>Fuites : abonnements & jeux d’argent</li>
+        <li>1 objectif d’épargne</li>
+        <li>Rappel email hebdomadaire</li>
+      </ul>
+      <a class="btn btn-primary full" href="login.html">Créer un compte</a>
+    </div>
+
+    <div class="card pricing">
+      <h2>Complet</h2>
+      <p class="price">8,99 € <span class="muted">/ mois</span></p>
+      <ul class="list">
+        <li>Tout Essentiel</li>
+        <li>Objectifs multiples</li>
+        <li>Imprévus illimités</li>
+        <li>Comparaison de décisions</li>
+        <li>Assistant IA + emails avancés</li>
+      </ul>
+      <a class="btn btn-ghost full" href="login.html">Passer au complet</a>
+    </div>
+  </section>
+
+  <section class="card callout">
+    <h2>Gadget (achat unique)</h2>
+    <p>
+      Calculateur “minimum vital” : une estimation rapide, sans compte.
+      <span class="muted">Disponible après le lancement.</span>
+    </p>
+  </section>
+
+  <footer class="footer">
+    <a href="index.html">Accueil</a> ·
+    <a href="test.html">Test gratuit</a> ·
+    <span class="muted">© <span id="year"></span> Où part mon argent</span>
+  </footer>
+</main>
+
+<script>
+  document.getElementById("year").textContent = new Date().getFullYear();
+</script>
+
+</body>
+</html>
