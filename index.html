@@ -2,11 +2,87 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <title>Où part mon argent</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Où part mon argent ?</title>
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <h1>Où part mon argent</h1>
-  <p>Le site arrive bientôt.</p>
+
+<header class="header">
+  <div class="brand">
+    <div class="logo">€</div>
+    <div>
+      <div class="brand-title">Où part mon argent ?</div>
+      <div class="brand-subtitle">Clarté • Épargne • Décisions</div>
+    </div>
+  </div>
+
+  <nav class="nav">
+    <a class="nav-link active" href="index.html">Accueil</a>
+    <a class="nav-link" href="test.html">Test gratuit</a>
+    <a class="nav-link" href="tarifs.html">Tarifs</a>
+    <a class="nav-link" href="login.html">Connexion</a>
+  </nav>
+</header>
+
+<main class="container">
+  <section class="hero">
+    <h1>Comprenez où part votre argent, en 2 minutes.</h1>
+    <p class="lead">
+      Estimez votre <strong>minimum vital</strong>, votre <strong>reste à vivre</strong> et vos
+      <strong>fuites</strong> (abonnements, jeux d’argent, dépenses invisibles).
+    </p>
+
+    <div class="cta-row">
+      <a class="btn btn-primary" href="test.html">Faire le test gratuit</a>
+      <a class="btn btn-ghost" href="tarifs.html">Voir les tarifs</a>
+    </div>
+
+    <div class="trust">
+      <div class="pill">Sans carte</div>
+      <div class="pill">Sans banque</div>
+      <div class="pill">Simple & clair</div>
+    </div>
+  </section>
+
+  <section class="grid-3">
+    <div class="card">
+      <h2>1) Clarté</h2>
+      <p>Votre budget résumé : essentiels, non essentiels, minimum vital et reste à vivre.</p>
+    </div>
+    <div class="card">
+      <h2>2) Épargne</h2>
+      <p>Fixez un objectif (ex : voiture 10 000 €) et obtenez un plan réaliste par semaine.</p>
+    </div>
+    <div class="card">
+      <h2>3) Décisions</h2>
+      <p>Comparez 2 choix et simulez un imprévu pour voir si vous tenez le mois.</p>
+    </div>
+  </section>
+
+  <section class="card callout">
+    <h2>Ce que vous obtenez</h2>
+    <ul class="list">
+      <li><strong>Test gratuit</strong> : estimation rapide (sans compte).</li>
+      <li><strong>Dashboard</strong> : suivi simple semaine/mois (avec compte).</li>
+      <li><strong>Rappels email</strong> : 1 fois/semaine pour rester régulier.</li>
+    </ul>
+    <div class="cta-row">
+      <a class="btn btn-primary" href="test.html">Commencer gratuitement</a>
+      <a class="btn btn-ghost" href="login.html">Créer un compte</a>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <a href="tarifs.html">Tarifs</a> ·
+    <a href="login.html">Connexion</a> ·
+    <span class="muted">© <span id="year"></span> Où part mon argent</span>
+  </footer>
+</main>
+
+<script>
+  document.getElementById("year").textContent = new Date().getFullYear();
+</script>
+
 </body>
 </html>
-<link rel="stylesheet" href="css/style.css">
