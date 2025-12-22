@@ -1,9 +1,75 @@
-<nav>
-  <a href="index.html">Accueil</a>
-  <a href="test.html">Test gratuit</a>
-  <a href="tarifs.html">Tarifs</a>
-  <a href="login.html">Connexion</a>
-</nav>
-<hr>
-<link rel="stylesheet" href="css/style.css">
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Connexion — Où part mon argent ?</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
 
+<header class="header">
+  <div class="brand">
+    <div class="logo">€</div>
+    <div>
+      <div class="brand-title">Où part mon argent ?</div>
+      <div class="brand-subtitle">Connexion</div>
+    </div>
+  </div>
+
+  <nav class="nav">
+    <a class="nav-link" href="index.html">Accueil</a>
+    <a class="nav-link" href="test.html">Test gratuit</a>
+    <a class="nav-link" href="tarifs.html">Tarifs</a>
+    <a class="nav-link active" href="login.html">Connexion</a>
+  </nav>
+</header>
+
+<main class="container">
+  <section class="hero compact">
+    <h1>Connexion</h1>
+    <p class="lead">Connectez-vous pour accéder à votre dashboard.</p>
+  </section>
+
+  <section class="grid-2">
+    <div class="card">
+      <h2>Se connecter</h2>
+      <form class="form" onsubmit="return false;">
+        <div class="field">
+          <label>Email</label>
+          <input type="email" placeholder="exemple@email.com">
+        </div>
+        <div class="field">
+          <label>Mot de passe</label>
+          <input type="password" placeholder="••••••••">
+        </div>
+        <button class="btn btn-primary full">Se connecter</button>
+        <p class="muted small" style="margin-top:10px;">(Connexion active à partir de Jour 5)</p>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2>Créer un compte</h2>
+      <p>Créez votre espace pour sauvegarder vos données, suivre vos mois et recevoir vos rappels.</p>
+      <ul class="list">
+        <li>Dashboard personnalisé</li>
+        <li>Objectifs d’épargne</li>
+        <li>Imprévus & comparaisons</li>
+      </ul>
+      <a class="btn btn-ghost full" href="tarifs.html">Voir les offres</a>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <a href="index.html">Accueil</a> ·
+    <a href="tarifs.html">Tarifs</a> ·
+    <span class="muted">© <span id="year"></span> Où part mon argent</span>
+  </footer>
+</main>
+
+<script>
+  document.getElementById("year").textContent = new Date().getFullYear();
+</script>
+
+</body>
+</html>
