@@ -1,14 +1,12 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-   <link rel="stylesheet" href="/css/style.css?v=2">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Test gratuit — Où part mon argent ?</title>
   <meta name="description" content="Test gratuit : estimez votre minimum vital et votre reste à vivre en 2 minutes.">
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css?v=2">
 </head>
-  <script src="/assets/nav-auth.js"></script>
 <body>
 
 <header class="header">
@@ -21,20 +19,13 @@
   </div>
 
   <nav class="nav">
-  <a class="nav-link" href="/index.html">Accueil</a>
-  <a class="nav-link" href="/test.html">Test gratuit</a>
-  <a class="nav-link" href="/tarifs.html">Tarifs</a>
-
-  <!-- Visible si PAS connecté -->
-  <a class="nav-link" href="/login.html" data-auth="out">Connexion</a>
-
-  <!-- Visible si connecté -->
-  <a class="nav-link" href="/dashboard.html" data-auth="in">Dashboard</a>
-  <button class="btn-ghost" type="button" data-auth="in" data-logout>
-    Déconnexion
-  </button>
-</nav>
-
+    <a class="nav-link" href="index.html">Accueil</a>
+    <a class="nav-link active" href="test.html">Test gratuit</a>
+    <a class="nav-link" href="tarifs.html">Tarifs</a>
+    <a class="nav-link" href="login.html" data-auth="out">Connexion</a>
+    <a class="nav-link" href="dashboard.html" data-auth="in">Dashboard</a>
+    <button class="btn-ghost" type="button" data-auth="in" data-logout>Déconnexion</button>
+  </nav>
 </header>
 
 <main class="container">
@@ -82,8 +73,11 @@
 
         <button class="btn btn-primary" type="submit">Calculer</button>
 
-        <p class="hint">
+        <p class="hint" data-auth="out">
           Ce test ne sauvegarde rien. Pour un tableau de bord + suivi + rappels email, créez un compte ensuite.
+        </p>
+        <p class="hint" data-auth="in" style="display: none;">
+          ✅ Connecté ! Vos résultats seront automatiquement sauvegardés dans votre Dashboard.
         </p>
       </form>
 
@@ -107,15 +101,45 @@
           </div>
         </div>
 
+        <!-- Score (nouveau) -->
+        <div style="text-align: center; margin: var(--space-xl) 0;">
+          <div style="position: relative; width: 100px; height: 100px; margin: 0 auto;">
+            <svg width="100" height="100" viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r="40" fill="none" stroke="#e5e7eb" stroke-width="8"/>
+              <circle id="score-circle" cx="50" cy="50" r="40" fill="none" stroke="var(--accent)" stroke-width="8" 
+                stroke-dasharray="251" stroke-dashoffset="251" stroke-linecap="round" 
+                transform="rotate(-90 50 50)" style="transition: stroke-dashoffset 1s ease;"/>
+            </svg>
+            <div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+              <span style="font-size: 24px; font-weight: 800;" id="score-value">0</span>
+              <span style="font-size: 10px; color: var(--text-muted);">/100</span>
+            </div>
+          </div>
+          <div style="margin-top: var(--space-sm);">
+            <span class="badge" id="score-badge" style="font-size: 12px;">—</span>
+          </div>
+        </div>
+
         <div class="card mt-md" style="background: var(--bg-subtle); border: 1px solid var(--border-light);">
           <div class="mini-title">Lecture rapide</div>
           <p style="font-size: 1rem; font-weight: 600; color: var(--text-primary); margin: 8px 0;" id="outMessage">—</p>
           <p class="muted small" id="outTip"></p>
         </div>
 
+        <!-- Message de sauvegarde pour les connectés -->
+        <div class="card mt-md" id="saved-message" style="display: none; background: rgba(13,159,111,0.1); border: 1px solid var(--accent);">
+          <p style="color: var(--accent); font-weight: 600; margin: 0;">
+            ✅ Résultats sauvegardés dans votre Dashboard !
+          </p>
+        </div>
+
         <div class="cta-row mt-lg">
-          <a class="btn btn-primary" href="login.html">Créer un compte</a>
-          <a class="btn btn-secondary" href="tarifs.html">Voir les offres</a>
+          <!-- Si connecté -->
+          <a class="btn btn-primary" href="dashboard.html" data-auth="in">📊 Voir mon Dashboard</a>
+          
+          <!-- Si pas connecté -->
+          <a class="btn btn-primary" href="login.html" data-auth="out">Créer un compte</a>
+          <a class="btn btn-secondary" href="tarifs.html" data-auth="out">Voir les offres</a>
         </div>
       </section>
     </section>
@@ -123,15 +147,24 @@
 </main>
 
 <footer class="footer">
-  <span>© <span id="year"></span> Où part mon argent</span>
+  <a href="tarifs.html">Tarifs</a> ·
+  <a href="index.html">Accueil</a> ·
+  <span class="muted">© <span id="year"></span> Où part mon argent</span>
 </footer>
 
+<script src="assets/nav-auth.js"></script>
 <script>
+  // ============================================
+  // CONFIGURATION
+  // ============================================
   document.getElementById("year").textContent = new Date().getFullYear();
-
+  
   const eur = (n) => new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(n);
   const WEEKS_PER_MONTH = 4.33;
 
+  // ============================================
+  // UTILITAIRES
+  // ============================================
   function toNumber(id) {
     const v = document.getElementById(id).value;
     if (v === "" || v === null || v === undefined) return 0;
@@ -143,9 +176,97 @@
     return Number.isFinite(n) ? n : 0;
   }
 
+  function isLoggedIn() {
+    try {
+      const s = JSON.parse(localStorage.getItem("auth_session_v1"));
+      return !!(s && s.email);
+    } catch { 
+      return false; 
+    }
+  }
+
+  // ============================================
+  // CALCUL DU SCORE
+  // ============================================
+  function calculateScore(revenus, resteAVivre) {
+    if (revenus <= 0) return 0;
+    const ratio = resteAVivre / revenus;
+    if (ratio >= 0.25) return Math.min(100, Math.round(70 + ratio * 100));
+    if (ratio >= 0.10) return Math.round(40 + ratio * 200);
+    if (ratio > 0) return Math.max(10, Math.round(ratio * 400));
+    return 0;
+  }
+
+  function getScoreInfo(score) {
+    if (score >= 70) return { label: 'Bonne santé', class: 'success' };
+    if (score >= 40) return { label: 'À surveiller', class: 'warning' };
+    return { label: 'Attention', class: 'danger' };
+  }
+
+  function generateConseil(score) {
+    if (score >= 70) return 'Votre situation financière est saine. Continuez à épargner régulièrement.';
+    if (score >= 40) return 'Quelques ajustements peuvent améliorer votre situation financière.';
+    return 'Votre reste à vivre est faible. Identifiez les dépenses à réduire en priorité.';
+  }
+
+  // ============================================
+  // SAUVEGARDE DANS LOCALSTORAGE
+  // ============================================
+  function saveTestToHistory(testData) {
+    let tests = [];
+    try {
+      const stored = localStorage.getItem('tests');
+      if (stored) tests = JSON.parse(stored);
+    } catch (e) {}
+
+    // Ajouter le nouveau test
+    tests.push(testData);
+    localStorage.setItem('tests', JSON.stringify(tests));
+
+    // Mettre à jour le dernier test
+    localStorage.setItem('lastTest', JSON.stringify(testData));
+
+    return testData;
+  }
+
+  // ============================================
+  // ANIMATION DU SCORE
+  // ============================================
+  function animateScore(score) {
+    const circumference = 2 * Math.PI * 40; // 251
+    const offset = circumference - (score / 100) * circumference;
+    
+    setTimeout(() => {
+      document.getElementById('score-circle').style.strokeDashoffset = offset;
+    }, 200);
+
+    // Animer le chiffre
+    let current = 0;
+    const duration = 1000;
+    const start = performance.now();
+    
+    function step(timestamp) {
+      const progress = Math.min((timestamp - start) / duration, 1);
+      current = Math.floor(progress * score);
+      document.getElementById('score-value').textContent = current;
+      if (progress < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+
+    // Badge
+    const scoreInfo = getScoreInfo(score);
+    const badge = document.getElementById('score-badge');
+    badge.textContent = scoreInfo.label;
+    badge.className = 'badge ' + scoreInfo.class;
+  }
+
+  // ============================================
+  // SOUMISSION DU FORMULAIRE
+  // ============================================
   document.getElementById("freeTestForm").addEventListener("submit", (e) => {
     e.preventDefault();
 
+    // Récupérer les valeurs
     const income = toNumber("income");
     const rent = toNumber("rent");
     const fixed = toNumber("fixed");
@@ -153,14 +274,23 @@
     const subs = toNumber("subs");
     const risk = toNumber("risk");
 
-    const minMonth = clamp(rent + fixed + variable + subs + risk);
+    // Calculs
+    const depensesEssentielles = clamp(rent + fixed + variable);
+    const depensesNonEssentielles = clamp(subs + risk);
+    const minMonth = clamp(depensesEssentielles + depensesNonEssentielles);
     const minWeek = clamp(minMonth / WEEKS_PER_MONTH);
     const leftMonth = clamp(income - minMonth);
 
+    // Afficher les résultats de base
     document.getElementById("outMinMonth").textContent = eur(minMonth);
     document.getElementById("outMinWeek").textContent = eur(minWeek);
     document.getElementById("outLeftMonth").textContent = eur(leftMonth);
 
+    // Calculer le score
+    const score = calculateScore(income, leftMonth);
+    animateScore(score);
+
+    // Message et conseils
     let message = "";
     let tip = "";
 
@@ -186,166 +316,31 @@
     document.getElementById("outMessage").textContent = message;
     document.getElementById("outTip").textContent = tip;
 
+    // ============================================
+    // SAUVEGARDE SI CONNECTÉ
+    // ============================================
+    if (isLoggedIn()) {
+      const testData = {
+        date: new Date().toISOString(),
+        revenus: income,
+        depensesEssentielles: depensesEssentielles,
+        depensesNonEssentielles: depensesNonEssentielles,
+        resteAVivre: leftMonth,
+        score: score,
+        conseil: generateConseil(score)
+      };
+
+      saveTestToHistory(testData);
+
+      // Afficher le message de sauvegarde
+      document.getElementById("saved-message").style.display = "block";
+    }
+
+    // Afficher la section résultats
     document.getElementById("result").style.display = "block";
     document.getElementById("result").scrollIntoView({ behavior: "smooth", block: "start" });
   });
 </script>
-   // ============================================
-// SNIPPET À AJOUTER À TEST.HTML
-// À placer après le calcul des résultats
-// ============================================
-
-// Fonction pour sauvegarder le test dans localStorage
-function saveTestToHistory(testData) {
-  // Récupérer l'historique existant
-  let tests = [];
-  try {
-    const stored = localStorage.getItem('tests');
-    if (stored) tests = JSON.parse(stored);
-  } catch (e) {}
-
-  // Créer l'objet test
-  const newTest = {
-    date: new Date().toISOString(),
-    revenus: testData.revenus,
-    depensesEssentielles: testData.depensesEssentielles,
-    depensesNonEssentielles: testData.depensesNonEssentielles,
-    resteAVivre: testData.resteAVivre,
-    score: testData.score || calculateTestScore(testData),
-    conseil: testData.conseil || ''
-  };
-
-  // Ajouter à l'historique
-  tests.push(newTest);
-  localStorage.setItem('tests', JSON.stringify(tests));
-
-  // Mettre à jour le dernier test
-  localStorage.setItem('lastTest', JSON.stringify(newTest));
-
-  return newTest;
-}
-
-// Calcul du score basé sur le reste à vivre
-function calculateTestScore(data) {
-  const ratio = data.resteAVivre / data.revenus;
-  if (ratio >= 0.25) return Math.min(100, Math.round(70 + ratio * 100));
-  if (ratio >= 0.10) return Math.round(40 + ratio * 200);
-  return Math.max(0, Math.round(ratio * 400));
-}
-
-// Générer un conseil basé sur le score
-function generateConseil(score) {
-  if (score >= 70) return 'Votre situation financière est saine. Continuez à épargner régulièrement pour atteindre vos objectifs.';
-  if (score >= 40) return 'Quelques ajustements peuvent améliorer votre situation financière. Identifiez les dépenses non essentielles à réduire.';
-  return 'Votre reste à vivre est faible. Identifiez les dépenses à réduire en priorité et établissez un budget strict.';
-}
-
-// ============================================
-// EXEMPLE D'UTILISATION
-// À adapter selon la structure de ton test.html
-// ============================================
-
-/*
-// Quand l'utilisateur soumet le formulaire de test :
-
-function onTestSubmit() {
-  // Récupérer les valeurs du formulaire
-  const revenus = parseFloat(document.getElementById('revenus').value) || 0;
-  const depEss = parseFloat(document.getElementById('depenses-essentielles').value) || 0;
-  const depNonEss = parseFloat(document.getElementById('depenses-non-essentielles').value) || 0;
-  const resteAVivre = revenus - depEss - depNonEss;
-
-  // Créer l'objet test
-  const testData = {
-    revenus: revenus,
-    depensesEssentielles: depEss,
-    depensesNonEssentielles: depNonEss,
-    resteAVivre: resteAVivre
-  };
-
-  // Calculer le score
-  testData.score = calculateTestScore(testData);
-  testData.conseil = generateConseil(testData.score);
-
-  // Sauvegarder
-  saveTestToHistory(testData);
-
-  // Si connecté, rediriger vers dashboard
-  const isLoggedIn = (() => {
-    try {
-      const s = JSON.parse(localStorage.getItem("auth_session_v1"));
-      return !!(s && s.email);
-    } catch { return false; }
-  })();
-
-  if (isLoggedIn) {
-    // Redirection vers le dashboard
-    window.location.href = 'dashboard.html';
-  } else {
-    // Afficher les résultats sur la page
-    showResults(testData);
-  }
-}
-*/
-
-// ============================================
-// VERSION COMPLÈTE - REMPLACE TON CODE TEST
-// ============================================
-
-// Si ton test.html utilise un formulaire, voici comment l'intégrer :
-// Ajoute ceci après ton <script> existant ou remplace la logique de calcul
-
-document.addEventListener('DOMContentLoaded', function() {
-  const form = document.querySelector('form');
-  if (!form) return;
-
-  form.addEventListener('submit', function(e) {
-    e.preventDefault();
-
-    // Adapter ces IDs selon ton formulaire
-    const revenus = parseFloat(document.getElementById('revenus')?.value) || 0;
-    
-    // Si tu as des champs individuels pour les dépenses
-    // const loyer = parseFloat(document.getElementById('loyer')?.value) || 0;
-    // const transport = parseFloat(document.getElementById('transport')?.value) || 0;
-    // etc.
-
-    // Exemple avec champs génériques
-    const depEss = parseFloat(document.getElementById('depenses-essentielles')?.value) || 0;
-    const depNonEss = parseFloat(document.getElementById('depenses-non-essentielles')?.value) || 0;
-    
-    const resteAVivre = revenus - depEss - depNonEss;
-
-    const testData = {
-      revenus: revenus,
-      depensesEssentielles: depEss,
-      depensesNonEssentielles: depNonEss,
-      resteAVivre: resteAVivre
-    };
-
-    testData.score = calculateTestScore(testData);
-    testData.conseil = generateConseil(testData.score);
-
-    // Sauvegarder
-    saveTestToHistory(testData);
-
-    // Vérifier si connecté
-    let isLoggedIn = false;
-    try {
-      const s = JSON.parse(localStorage.getItem("auth_session_v1"));
-      isLoggedIn = !!(s && s.email);
-    } catch {}
-
-    // Afficher résultats ou rediriger
-    if (isLoggedIn) {
-      // Option 1: Rediriger vers dashboard
-      // window.location.href = 'dashboard.html';
-      
-      // Option 2: Afficher résultats puis proposer d'aller au dashboard
-      // showResults(testData);
-    }
-  });
-});
 
 </body>
 </html>
