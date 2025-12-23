@@ -8,41 +8,33 @@
 
   <!-- CSS GLOBAL DU SITE -->
   <link rel="stylesheet" href="/css/style.css?v=999">
-<link rel="stylesheet" href="/css/dashboard.css?v=1">
+<link rel="stylesheet" href="/css/dashboard.css?v=999">
 
 </head>
 
 <body>
-  <!-- ========================================
-       HEADER / NAVIGATION
-  ======================================== -->
-  <header class="header">
-    <div class="header-container">
-      <a href="/index.html" class="logo">en attente</a>
+ <header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="/index.html">
+      <span class="brand-icon">€</span>
+      <span class="brand-title">Où part mon argent ?</span>
+      <span class="brand-subtitle">Clarté • Épargne • Décisions</span>
+    </a>
 
-      <button class="menu-toggle" type="button"
-              onclick="toggleMenu()"
-              aria-label="Ouvrir le menu"
-              aria-controls="nav"
-              aria-expanded="false">
-        <span></span><span></span><span></span>
-      </button>
+    <nav class="nav-links">
+      <a href="/index.html">Accueil</a>
+      <a href="/test.html">Test gratuit</a>
+      <a href="/tarifs.html">Tarifs</a>
 
-      <!-- ✅ NAV corrigée (id="nav", class="nav", classes nav-link/nav-btn, data-auth OK) -->
-      <nav id="nav" class="nav">
-        <a class="nav-link" href="/index.html">Accueil</a>
-        <a class="nav-link" href="/test.html">Test gratuit</a>
-        <a class="nav-link" href="/tarifs.html">Tarifs</a>
+      <!-- visible si déconnecté -->
+      <a href="/login.html" data-auth="logged-out">Connexion</a>
 
-        <!-- Visible seulement si déconnecté -->
-        <a class="nav-link" href="/login.html" data-auth="logged-out">Connexion</a>
-
-        <!-- Visible seulement si connecté -->
-        <a class="nav-link active" href="/dashboard.html" data-auth="logged-in">Dashboard</a>
-        <a class="nav-btn outline" href="#" data-auth="logged-in" data-action="logout">Déconnexion</a>
-      </nav>
-    </div>
-  </header>
+      <!-- visible si connecté -->
+      <a href="/dashboard.html" data-auth="logged-in" class="active">Dashboard</a>
+      <a href="#" data-auth="logged-in" data-action="logout">Déconnexion</a>
+    </nav>
+  </div>
+</header>
 
   <!-- ========================================
        CONTENU PRINCIPAL
