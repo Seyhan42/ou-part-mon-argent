@@ -1,79 +1,90 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>Connexion | Où part mon argent</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <!-- CSS GLOBAL -->
-  <link rel="stylesheet" href="/css/style.css?v=2">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Connexion — Où part mon argent</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
-
 <body>
-
-  <!-- HEADER -->
-  <header class="header">
-    <div class="header-container">
-      <a href="/index.html" class="logo">
-        💰 Où part mon argent
-      </a>
-
-      <nav class="top-nav" id="nav">
-        <a href="/index.html">Accueil</a>
-        <a href="/test.html">Test gratuit</a>
-        <a href="/tarifs.html">Tarifs</a>
-
-        <a href="/login.html" data-auth="logged-out" class="active">Connexion</a>
-        <a href="/dashboard.html" data-auth="logged-in">Dashboard</a>
-        <a href="#" data-auth="logged-in" data-action="logout">Déconnexion</a>
-      </nav>
+  <header class="site-header">
+    <div class="brand">
+      <div class="logo">€</div>
+      <div>
+        <div class="brand-title">Où part mon argent ?</div>
+        <div class="brand-subtitle">Clarté • Épargne • Décisions</div>
+      </div>
     </div>
+    <nav class="nav">
+      <a class="nav-link" href="index.html">Accueil</a>
+      <a class="nav-link" href="test.html">Test gratuit</a>
+      <a class="nav-link" href="tarifs.html">Tarifs</a>
+      <a class="nav-link" href="register.html">Créer un compte</a>
+      <a class="nav-link active" href="login.html">Connexion</a>
+    </nav>
   </header>
 
-  <!-- CONTENU -->
-  <main class="container" style="padding-top: 3rem; max-width: 420px;">
-    <h1 style="margin-bottom: 1rem;">Connexion</h1>
-    <p style="margin-bottom: 2rem; color:#6b7280;">
-      Accédez à votre tableau de bord personnel.
-    </p>
+  <main class="container">
+    <section class="grid-2" style="margin-top:2rem;">
+      <div class="card">
+        <h2>Se connecter</h2>
+        <p class="small">Accède à ton dashboard et retrouve tes résultats.</p>
 
-    <form id="loginForm" class="card">
-      <div style="margin-bottom: 1rem;">
-        <label>Email</label>
-        <input type="email" required placeholder="email@example.com">
+        <div class="divider"></div>
+
+        <form id="loginForm" class="form">
+          <div class="field">
+            <label for="email">Email</label>
+            <input id="email" type="email" placeholder="exemple@email.com" required />
+          </div>
+
+          <div class="field">
+            <label for="password">Mot de passe</label>
+            <input id="password" type="password" placeholder="••••••••" required />
+          </div>
+
+          <button class="btn full" type="submit">Se connecter</button>
+          <p id="msg" class="small" style="margin-top:.5rem;"></p>
+        </form>
       </div>
 
-      <div style="margin-bottom: 1.5rem;">
-        <label>Mot de passe</label>
-        <input type="password" required placeholder="••••••••">
+      <div class="card callout">
+        <h2>Créer un compte</h2>
+        <p class="small">Sauvegarde tes données, suis tes objectifs, reçois des rappels.</p>
+        <ul class="list">
+          <li>Dashboard personnel</li>
+          <li>Objectifs d’épargne</li>
+          <li>Suivi mois/semaine</li>
+        </ul>
+        <a class="btn btn-ghost full" href="register.html">Créer mon compte</a>
       </div>
-
-      <button type="submit" class="nav-btn primary" style="width:100%;">
-        Se connecter
-      </button>
-    </form>
-
-    <p style="margin-top:1.5rem;font-size:14px;">
-      Pas encore de compte ?
-      <a href="/register.html" style="color:#16a34a;font-weight:600;">
-        Créer un compte
-      </a>
-    </p>
+    </section>
   </main>
 
-  <!-- SCRIPTS -->
-  <script src="/nav-auth.js"></script>
+  <footer class="footer">© 2025 Où part mon argent</footer>
+
+  <script src="assets/auth.js"></script>
   <script>
-    document.getElementById("loginForm").addEventListener("submit", function(e) {
+    // Si déjà connecté → dashboard
+    if (isLoggedIn()) window.location.href = "dashboard.html";
+
+    const form = document.getElementById("loginForm");
+    const msg = document.getElementById("msg");
+
+    form.addEventListener("submit", async (e) => {
       e.preventDefault();
+      msg.textContent = "";
 
-      // 🔐 SIMULATION DE CONNEXION (MVP)
-      authManager.login();
+      const email = document.getElementById("email").value;
+      const pass = document.getElementById("password").value;
 
-      // Redirection
-      window.location.href = "/dashboard.html";
+      const res = await loginUser(email, pass);
+      msg.textContent = res.message;
+
+      if (res.ok) {
+        window.location.href = "dashboard.html";
+      }
     });
   </script>
-
 </body>
 </html>
