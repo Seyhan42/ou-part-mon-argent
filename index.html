@@ -1,101 +1,78 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <link rel="stylesheet" href="/css/style.css?v=2">
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Où part mon argent ?</title>
-  <link rel="stylesheet" href="css/style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Connexion — Où part mon argent ?</title>
+
+  <!-- Ton CSS global -->
+  <link rel="stylesheet" href="/css/style.css?v=20" />
 </head>
-  <script src="/assets/nav-auth.js"></script>
+
 <body>
+  <header class="header">
+    <div class="header-container">
+      <a href="/index.html" class="logo">€</a>
 
-<header class="header">
-  <div class="brand">
-    <div class="logo">€</div>
-    <div>
-      <div class="brand-title">Où part mon argent ?</div>
-      <div class="brand-subtitle">Clarté • Épargne • Décisions</div>
+      <nav class="top-nav" id="nav">
+        <a href="/index.html">Accueil</a>
+        <a href="/test.html">Test gratuit</a>
+        <a href="/tarifs.html">Tarifs</a>
+
+        <a href="/login.html" data-auth="logged-out" class="active">Connexion</a>
+
+        <a href="/dashboard.html" data-auth="logged-in">Dashboard</a>
+        <a href="#" data-auth="logged-in" data-action="logout">Déconnexion</a>
+      </nav>
     </div>
-  </div>
+  </header>
 
-  <nav class="nav">
-  <a class="nav-link" href="/index.html">Accueil</a>
-  <a class="nav-link" href="/test.html">Test gratuit</a>
-  <a class="nav-link" href="/tarifs.html">Tarifs</a>
-
-  <!-- Visible si PAS connecté -->
-  
-  <a class="nav-link" href="/login.html" data-auth="out">Connexion</a>
-
-  <!-- Visible si connecté -->
-  <a class="nav-link" href="/dashboard.html" data-auth="in">Dashboard</a>
-  <button class="btn-ghost" type="button" data-auth="in" data-logout>
-    Déconnexion
-  </button>
-</nav>
-
-
-</header>
-
-<main class="container">
-  <section class="hero">
-    <h1>Comprenez où part votre argent, en 2 minutes.</h1>
-    <p class="lead">
-      Estimez votre <strong>minimum vital</strong>, votre <strong>reste à vivre</strong> et vos
-      <strong>fuites</strong> (abonnements, jeux d'argent, dépenses invisibles).
+  <main class="container" style="padding:32px 16px;max-width:520px;">
+    <h1 style="margin-bottom:8px;">Connexion</h1>
+    <p style="margin-bottom:18px;opacity:.8;">
+      Connectez-vous pour accéder à votre dashboard.
     </p>
 
-    <div class="cta-row">
-      <a class="btn btn-primary" href="test.html">Faire le test gratuit</a>
-      <a class="btn btn-ghost" href="tarifs.html">Voir les tarifs</a>
-    </div>
+    <form id="loginForm" style="display:grid;gap:12px;">
+      <div>
+        <label>Email</label>
+        <input id="email" type="email" required placeholder="email@example.com" />
+      </div>
 
-    <div class="trust">
-      <div class="pill">Sans carte</div>
-      <div class="pill">Sans banque</div>
-      <div class="pill">Simple & clair</div>
-    </div>
-  </section>
+      <div>
+        <label>Mot de passe</label>
+        <input id="password" type="password" required placeholder="••••••••" />
+      </div>
 
-  <section class="grid-3">
-    <div class="card">
-      <h2>Clarté</h2>
-      <p>Votre budget résumé : essentiels, non essentiels, minimum vital et reste à vivre.</p>
-    </div>
-    <div class="card">
-      <h2>Épargne</h2>
-      <p>Fixez un objectif (ex : voiture 10 000 €) et obtenez un plan réaliste par semaine.</p>
-    </div>
-    <div class="card">
-      <h2>Décisions</h2>
-      <p>Comparez 2 choix et simulez un imprévu pour voir si vous tenez le mois.</p>
-    </div>
-  </section>
+      <button type="submit" class="btn">Se connecter</button>
+      <p id="msg" style="font-size:14px;opacity:.75;"></p>
+    </form>
 
-  <section class="card callout mt-lg">
-    <h2>Ce que vous obtenez</h2>
-    <ul class="list">
-      <li><strong>Test gratuit</strong> : estimation rapide (sans compte).</li>
-      <li><strong>Dashboard</strong> : suivi simple semaine/mois (avec compte).</li>
-      <li><strong>Rappels email</strong> : 1 fois/semaine pour rester régulier.</li>
-    </ul>
-    <div class="cta-row">
-      <a class="btn btn-primary" href="test.html">Commencer gratuitement</a>
-      <a class="btn btn-ghost" href="login.html">Créer un compte</a>
-    </div>
-  </section>
+    <hr style="margin:22px 0;opacity:.2;">
 
-  <footer class="footer">
-    <a href="tarifs.html">Tarifs</a> ·
-    <a href="login.html">Connexion</a> ·
-    <span class="muted">© <span id="year"></span> Où part mon argent</span>
-  </footer>
-</main>
+    <p style="margin-bottom:10px;font-weight:600;">Pas encore de compte ?</p>
+    <a class="btn btn-ghost" href="/register.html">Créer un compte</a>
+  </main>
 
-<script>
-  document.getElementById("year").textContent = new Date().getFullYear();
-</script>
+  <script src="/nav-auth.js"></script>
+  <script>
+    // Si déjà connecté -> dashboard
+    if (localStorage.getItem("auth") === "1") {
+      window.location.href = "/dashboard.html";
+    }
 
+    document.getElementById("loginForm").addEventListener("submit", function(e){
+      e.preventDefault();
+
+      // MVP : on active l'état connecté (local)
+      if (window.authManager && typeof window.authManager.login === "function") {
+        window.authManager.login();
+      } else {
+        localStorage.setItem("auth","1");
+      }
+
+      window.location.href = "/dashboard.html";
+    });
+  </script>
 </body>
 </html>
