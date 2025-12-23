@@ -5,6 +5,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Dashboard – Où part mon argent ?</title>
   <link rel="stylesheet" href="css/style.css?v=2">
+  
+  <!-- PROTECTION : Redirection si non connecté (exécuté AVANT le rendu) -->
+  <script>
+    (function() {
+      try {
+        var s = JSON.parse(localStorage.getItem("auth_session_v1"));
+        if (!(s && s.email)) {
+          document.documentElement.style.display = 'none';
+          window.location.replace('login.html');
+        }
+      } catch(e) {
+        document.documentElement.style.display = 'none';
+        window.location.replace('login.html');
+      }
+    })();
+  </script>
   <style>
     .main { max-width: 1100px; margin: 0 auto; padding: var(--space-xl); }
     .page-header { text-align: center; margin-bottom: var(--space-xl); }
@@ -35,8 +51,6 @@
   </style>
 </head>
 <body>
-<script src="assets/nav-auth.js"></script>
-
 <header class="header">
   <div class="brand">
     <div class="logo">€</div>
@@ -249,6 +263,7 @@
 
 <footer class="footer"><a href="tarifs.html">Tarifs</a> · <a href="index.html">Accueil</a> · <span class="muted">© <span id="year"></span> Où part mon argent</span></footer>
 
+<script src="assets/nav-auth.js"></script>
 <script src="js/dashboard.js"></script>
 </body>
 </html>
