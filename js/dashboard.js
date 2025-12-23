@@ -2,390 +2,239 @@
 // DASHBOARD.JS - Où part mon argent ?
 // ============================================
 
-// ============================================
-// PROTECTION AUTH - BLOQUE L'ACCÈS SI NON CONNECTÉ
-// ============================================
-(function() {
-  function isLoggedIn() {
-    try {
-      const s = JSON.parse(localStorage.getItem("auth_session_v1"));
-      return !!(s && s.email);
-    } catch { 
-      return false; 
-    }
-  }
-  
-  // Si pas connecté -> redirection immédiate
-  if (!isLoggedIn()) {
-    // Empêcher tout affichage de la page
-    document.documentElement.style.display = 'none';
-    window.location.replace('login.html');
-    return;
-  }
-})();
-
-// Configuration Plans
 const PLANS = {
-  free: { name: 'Gratuit', epargne: false, fuites: false, rappels: false },
-  essential: { name: 'Essentiel', epargne: true, fuites: true, rappels: true },
-  complete: { name: 'Complet', epargne: true, fuites: true, rappels: true }
+  free: { name: 'Gratuit', features: ['resume', 'historique'], color: '#6b7280' },
+  essential: { name: 'Essentiel', features: ['resume', 'historique', 'epargne', 'fuites', 'comparateur', 'rappels'], color: '#0d9f6f' },
+  complete: { name: 'Complet', features: ['resume', 'historique', 'epargne', 'fuites', 'comparateur', 'imprevu', 'rappels'], color: '#3b82f6' }
 };
 
-// ============================================
-// UTILITAIRES
-// ============================================
-function formatMoney(amount) {
-  return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount);
-}
+// === UTILITAIRES ===
+function formatMoney(n) { return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(n || 0); }
+function formatDate(d) { return d ? new Date(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : '—'; }
+function getData(k, def) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : def; } catch { return def; } }
+function setData(k, v) { localStorage.setItem(k, JSON.stringify(v)); }
+function getScoreInfo(s) { if (s >= 70) return { label: 'Bonne santé', class: 'success', title: 'Bonne gestion', desc: 'Continuez !' }; if (s >= 40) return { label: 'À surveiller', class: 'warning', title: 'Peut mieux faire', desc: 'Optimisez.' }; return { label: 'Attention', class: 'danger', title: 'Budget tendu', desc: 'Réduisez.' }; }
+function calculateScore(d) { if (!d || !d.revenus || d.revenus <= 0) return 0; const r = d.resteAVivre / d.revenus; if (r >= 0.25) return Math.min(100, Math.round(70 + r * 100)); if (r >= 0.10) return Math.round(40 + r * 200); return r > 0 ? Math.max(10, Math.round(r * 400)) : 0; }
 
-function formatDate(dateStr) {
-  return new Date(dateStr).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
-}
+// === NAVIGATION ===
+function showSection(id) { document.querySelectorAll('.section').forEach(s => s.classList.remove('active')); document.getElementById('section-' + id)?.classList.add('active'); document.querySelectorAll('.sidebar-link').forEach(l => { l.classList.remove('active'); if (l.dataset.section === id) l.classList.add('active'); }); }
 
-function getScoreInfo(score) {
-  if (score >= 70) return { label: 'Bonne santé', class: 'success', title: 'Bonne gestion budgétaire', desc: 'Votre situation financière est saine. Continuez à épargner régulièrement.' };
-  if (score >= 40) return { label: 'À surveiller', class: 'warning', title: 'Budget à optimiser', desc: 'Quelques ajustements peuvent améliorer votre situation.' };
-  return { label: 'Attention', class: 'danger', title: 'Budget tendu', desc: 'Votre reste à vivre est faible. Identifiez les dépenses à réduire.' };
-}
+// === MODALS ===
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.addEventListener('click', e => { if (e.target.classList.contains('modal')) e.target.classList.remove('open'); });
 
-function calculateScore(data) {
-  const ratio = data.resteAVivre / data.revenus;
-  if (ratio >= 0.25) return Math.min(100, Math.round(70 + ratio * 100));
-  if (ratio >= 0.10) return Math.round(40 + ratio * 200);
-  return Math.max(0, Math.round(ratio * 400));
-}
-
-function getData(key, defaultValue) {
-  try { 
-    const val = localStorage.getItem(key); 
-    console.log(`[DEBUG] getData('${key}'):`, val);
-    if (!val) return defaultValue;
-    const parsed = JSON.parse(val);
-    console.log(`[DEBUG] Parsed:`, parsed);
-    return parsed;
-  } 
-  catch (e) { 
-    console.error(`[DEBUG] Error parsing ${key}:`, e);
-    return defaultValue; 
-  }
-}
-
-function setData(key, value) {
-  localStorage.setItem(key, JSON.stringify(value));
-}
-
-// ============================================
-// INITIALISATION
-// ============================================
+// === INITIALISATION ===
 function initDashboard() {
-  console.log('=== INIT DASHBOARD ===');
-  
   const plan = getData('plan', 'free');
   const lastTest = getData('lastTest', null);
   const tests = getData('tests', []);
   const savingsGoal = getData('savingsGoal', { objectif: 0, epargne: 0 });
   const subscriptions = getData('subscriptions', []);
   const gambling = getData('gambling', 0);
-
-  console.log('[DEBUG] plan:', plan);
-  console.log('[DEBUG] lastTest:', lastTest);
-  console.log('[DEBUG] tests:', tests);
-
-  // Plan
-  const planName = PLANS[plan]?.name || 'Gratuit';
-  console.log('[DEBUG] planName:', planName);
-  document.getElementById('user-plan').textContent = planName;
+  const planConfig = PLANS[plan] || PLANS.free;
   const hasPremium = plan !== 'free';
 
-  // Gestion accès premium
-  togglePremiumSection('epargne', hasPremium);
-  togglePremiumSection('fuites', hasPremium);
-  togglePremiumSection('rappels', hasPremium);
+  // Sidebar
+  document.getElementById('sidebar-plan').textContent = planConfig.name;
+  document.getElementById('sidebar-plan').style.color = planConfig.color;
 
-  // Badges
-  document.getElementById('savings-badge').textContent = hasPremium ? 'En cours' : '🔒';
-  document.getElementById('savings-badge').className = 'badge ' + (hasPremium ? 'warning' : 'locked');
-  document.getElementById('fuites-badge').textContent = hasPremium ? 'Actif' : '🔒';
-  document.getElementById('fuites-badge').className = 'badge ' + (hasPremium ? 'success' : 'locked');
-  document.getElementById('rappels-badge').textContent = hasPremium ? 'Disponible' : '🔒';
-  document.getElementById('rappels-badge').className = 'badge ' + (hasPremium ? 'success' : 'locked');
+  // Badges menu
+  ['epargne', 'fuites', 'comparateur', 'rappels'].forEach(f => { const b = document.getElementById('badge-' + f); if (b && planConfig.features.includes(f)) b.style.display = 'none'; });
+  if (plan === 'complete') { const b = document.getElementById('badge-imprevu'); if (b) b.style.display = 'none'; }
 
-  // Pas de test ?
-  if (!lastTest) {
-    console.log('[DEBUG] Pas de lastTest trouvé - affichage message');
-    document.getElementById('no-test-message').style.display = 'block';
-    document.getElementById('test-badge').textContent = '—';
-    renderHistorique([]);
-    document.getElementById('year').textContent = new Date().getFullYear();
-    return;
+  // Accès sections
+  ['epargne', 'fuites', 'comparateur', 'imprevu', 'rappels'].forEach(f => {
+    const c = document.getElementById(f + '-content'), l = document.getElementById(f + '-locked'), has = planConfig.features.includes(f);
+    if (c) c.style.display = has ? 'block' : 'none';
+    if (l) l.style.display = has ? 'none' : 'block';
+  });
+
+  // Stats premium row
+  const premiumRow = document.getElementById('premium-stats-row');
+  if (premiumRow) {
+    if (hasPremium) {
+      premiumRow.style.display = 'grid';
+      const p = savingsGoal.objectif > 0 ? Math.round((savingsGoal.epargne / savingsGoal.objectif) * 100) : 0;
+      document.getElementById('stat-epargne').textContent = formatMoney(savingsGoal.epargne);
+      document.getElementById('stat-objectif').textContent = formatMoney(savingsGoal.objectif);
+      document.getElementById('resume-progress-fill').style.width = p + '%';
+      const tf = subscriptions.reduce((s, a) => s + (a.montant || 0), 0) + gambling;
+      document.getElementById('stat-fuites').textContent = formatMoney(tf);
+    } else {
+      premiumRow.style.display = 'none';
+    }
   }
-
-  console.log('[DEBUG] lastTest trouvé, affichage des données');
-  document.getElementById('no-test-message').style.display = 'none';
 
   // Résumé financier
-  document.getElementById('revenus').textContent = formatMoney(lastTest.revenus);
-  document.getElementById('depenses-essentielles').textContent = formatMoney(lastTest.depensesEssentielles);
-  document.getElementById('depenses-non-essentielles').textContent = formatMoney(lastTest.depensesNonEssentielles);
-  document.getElementById('reste-a-vivre').textContent = formatMoney(lastTest.resteAVivre);
-
-  // Score
-  const score = lastTest.score || calculateScore(lastTest);
-  const scoreInfo = getScoreInfo(score);
-  
-  document.getElementById('test-badge').textContent = scoreInfo.label;
-  document.getElementById('test-badge').className = 'badge ' + scoreInfo.class;
-  document.getElementById('score-value').textContent = score;
-  document.getElementById('test-title').textContent = scoreInfo.title;
-  document.getElementById('test-description').textContent = lastTest.conseil || scoreInfo.desc;
-  document.getElementById('test-date').textContent = 'Dernier test : ' + formatDate(lastTest.date);
-
-  // Animation cercle
-  const circumference = 2 * Math.PI * 35;
-  const offset = circumference - (score / 100) * circumference;
-  setTimeout(() => { document.getElementById('score-circle').style.strokeDashoffset = offset; }, 200);
-
-  // Épargne
-  if (hasPremium && savingsGoal.objectif > 0) {
-    const percent = Math.round((savingsGoal.epargne / savingsGoal.objectif) * 100);
-    const restant = savingsGoal.objectif - savingsGoal.epargne;
-    const mensuel = Math.ceil(restant / 12);
+  if (!lastTest) {
+    document.getElementById('no-test-message').style.display = 'block';
+    document.getElementById('stats-grid').style.opacity = '0.5';
+    document.getElementById('test-badge').textContent = '—';
+    document.getElementById('score-value').textContent = '—';
+    document.getElementById('test-title').textContent = 'Aucun test';
+    document.getElementById('test-conseil').textContent = 'Faites un test.';
+    document.getElementById('test-date').textContent = '';
+    if (hasPremium) { document.getElementById('stat-score').textContent = '—'; document.getElementById('stat-score-badge').textContent = '—'; }
+  } else {
+    document.getElementById('no-test-message').style.display = 'none';
+    document.getElementById('stats-grid').style.opacity = '1';
+    document.getElementById('stat-revenus').textContent = formatMoney(lastTest.revenus);
+    document.getElementById('stat-dep-ess').textContent = formatMoney(lastTest.depensesEssentielles);
+    document.getElementById('stat-dep-non-ess').textContent = formatMoney(lastTest.depensesNonEssentielles);
+    document.getElementById('stat-reste').textContent = formatMoney(lastTest.resteAVivre);
     
-    document.getElementById('objectif-montant').textContent = formatMoney(savingsGoal.objectif);
-    document.getElementById('epargne-actuelle').textContent = formatMoney(savingsGoal.epargne);
-    document.getElementById('epargne-restante').textContent = formatMoney(restant);
-    document.getElementById('epargne-mensuelle').textContent = formatMoney(mensuel);
-    document.getElementById('progress-percent').textContent = percent + '%';
-    setTimeout(() => { document.getElementById('progress-fill').style.width = percent + '%'; }, 200);
+    const score = lastTest.score || calculateScore(lastTest);
+    const si = getScoreInfo(score);
+    document.getElementById('test-badge').textContent = si.label;
+    document.getElementById('test-badge').className = 'badge ' + si.class;
+    document.getElementById('score-value').textContent = score;
+    document.getElementById('test-title').textContent = si.title;
+    document.getElementById('test-conseil').textContent = lastTest.conseil || si.desc;
+    document.getElementById('test-date').textContent = 'Test: ' + formatDate(lastTest.date);
+    setTimeout(() => { document.getElementById('score-circle').style.strokeDashoffset = 220 - (score / 100) * 220; }, 300);
+    
+    if (hasPremium) {
+      document.getElementById('stat-score').textContent = score + '/100';
+      document.getElementById('stat-score-badge').textContent = si.label;
+      document.getElementById('stat-score-badge').className = 'badge ' + si.class;
+    }
   }
 
-  // Fuites
-  if (hasPremium) {
-    renderSubscriptions(subscriptions);
-    document.getElementById('gambling-amount').textContent = formatMoney(gambling);
-    updateTotalFuites(subscriptions, gambling);
-  }
-
-  // Historique
   renderHistorique(tests);
-
-  // Footer
-  document.getElementById('year').textContent = new Date().getFullYear();
+  if (planConfig.features.includes('epargne')) renderEpargne(savingsGoal);
+  if (planConfig.features.includes('fuites')) renderFuites(subscriptions, gambling);
 }
 
-function togglePremiumSection(name, hasPremium) {
-  const content = document.getElementById(name + '-content');
-  const locked = document.getElementById(name + '-locked');
-  if (content) content.style.display = hasPremium ? 'block' : 'none';
-  if (locked) locked.style.display = hasPremium ? 'none' : 'block';
-}
-
-// ============================================
-// ABONNEMENTS
-// ============================================
-function renderSubscriptions(subs) {
-  const list = document.getElementById('subscriptions-list');
-  if (subs.length === 0) {
-    list.innerHTML = '<li>Aucun abonnement</li>';
-    return;
-  }
-  list.innerHTML = subs.map((s, i) => `
-    <li style="display: flex; justify-content: space-between;">
-      <span>${s.nom}</span>
-      <span style="display: flex; align-items: center; gap: 8px;">
-        <strong>${formatMoney(s.montant)}</strong>
-        <button onclick="deleteAbonnement(${i})" style="background: none; border: none; color: #dc2626; cursor: pointer;">✕</button>
-      </span>
-    </li>
-  `).join('');
-}
-
-function updateTotalFuites(subs, gambling) {
-  const total = subs.reduce((sum, s) => sum + s.montant, 0) + gambling;
-  document.getElementById('total-fuites').textContent = formatMoney(total);
-}
-
-function ajouterAbonnement() { document.getElementById('modal-abonnement').style.display = 'flex'; }
-function closeAbonnement() { document.getElementById('modal-abonnement').style.display = 'none'; }
-
-function saveAbonnement() {
-  const nom = document.getElementById('abo-nom').value.trim();
-  const montant = parseFloat(document.getElementById('abo-montant').value) || 0;
-  if (!nom || montant <= 0) return alert('Remplissez tous les champs');
-  
-  const subs = getData('subscriptions', []);
-  subs.push({ nom, montant });
-  setData('subscriptions', subs);
-  document.getElementById('abo-nom').value = '';
-  document.getElementById('abo-montant').value = '';
-  closeAbonnement();
-  initDashboard();
-}
-
-function deleteAbonnement(index) {
-  const subs = getData('subscriptions', []);
-  subs.splice(index, 1);
-  setData('subscriptions', subs);
-  initDashboard();
-}
-
-// ============================================
-// JEUX D'ARGENT
-// ============================================
-function modifierJeux() {
-  document.getElementById('jeux-montant').value = getData('gambling', 0);
-  document.getElementById('modal-jeux').style.display = 'flex';
-}
-function closeJeux() { document.getElementById('modal-jeux').style.display = 'none'; }
-
-function saveJeux() {
-  const montant = parseFloat(document.getElementById('jeux-montant').value) || 0;
-  setData('gambling', montant);
-  closeJeux();
-  initDashboard();
-}
-
-// ============================================
-// OBJECTIF ÉPARGNE
-// ============================================
-function modifierObjectif() {
-  const goal = getData('savingsGoal', { objectif: 0, epargne: 0 });
-  document.getElementById('objectif-input').value = goal.objectif;
-  document.getElementById('epargne-input').value = goal.epargne;
-  document.getElementById('modal-objectif').style.display = 'flex';
-}
-function closeObjectif() { document.getElementById('modal-objectif').style.display = 'none'; }
-
-function saveObjectif() {
-  const objectif = parseFloat(document.getElementById('objectif-input').value) || 0;
-  const epargne = parseFloat(document.getElementById('epargne-input').value) || 0;
-  setData('savingsGoal', { objectif, epargne });
-  closeObjectif();
-  initDashboard();
-}
-
-function ajouterVersement() {
-  document.getElementById('versement-montant').value = '';
-  document.getElementById('modal-versement').style.display = 'flex';
-}
-function closeVersement() { document.getElementById('modal-versement').style.display = 'none'; }
-
-function saveVersement() {
-  const montant = parseFloat(document.getElementById('versement-montant').value) || 0;
-  if (montant <= 0) return alert('Entrez un montant valide');
-  
-  const goal = getData('savingsGoal', { objectif: 0, epargne: 0 });
-  goal.epargne += montant;
-  setData('savingsGoal', goal);
-  closeVersement();
-  initDashboard();
-}
-
-// ============================================
-// RAPPELS
-// ============================================
-function saveRappel() {
-  const active = document.getElementById('rappel-toggle').checked;
-  const email = document.getElementById('rappel-email').value.trim();
-  setData('rappelConfig', { active, email });
-  alert('Enregistré ! (fonctionnalité bientôt disponible)');
-}
-
-// ============================================
-// HISTORIQUE
-// ============================================
+// === HISTORIQUE ===
 function renderHistorique(tests) {
   const tbody = document.getElementById('historique-table');
   document.getElementById('historique-count').textContent = tests.length + ' test' + (tests.length > 1 ? 's' : '');
-  
-  if (tests.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: var(--space-lg); color: var(--text-muted);">Aucun test</td></tr>';
-    return;
-  }
-
+  if (tests.length === 0) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:var(--space-xl);color:var(--text-muted)">Aucun test. <a href="test.html">Faire un test</a></td></tr>'; return; }
   tbody.innerHTML = tests.slice().reverse().map((t, i) => {
-    const score = t.score || calculateScore(t);
-    const scoreInfo = getScoreInfo(score);
-    const totalDep = t.depensesEssentielles + t.depensesNonEssentielles;
-    const realIndex = tests.length - 1 - i;
-    return `
-      <tr style="border-bottom: 1px solid var(--border-light);">
-        <td style="padding: var(--space-sm);">${formatDate(t.date)}</td>
-        <td style="padding: var(--space-sm); text-align: right;">${formatMoney(t.revenus)}</td>
-        <td style="padding: var(--space-sm); text-align: right;">${formatMoney(totalDep)}</td>
-        <td style="padding: var(--space-sm); text-align: right; font-weight: 600;">${formatMoney(t.resteAVivre)}</td>
-        <td style="padding: var(--space-sm); text-align: center;"><span class="badge ${scoreInfo.class}">${score}</span></td>
-        <td style="padding: var(--space-sm); text-align: center;">
-          <button onclick="deleteTest(${realIndex})" style="background: none; border: none; color: #dc2626; cursor: pointer;">🗑️</button>
-        </td>
-      </tr>
-    `;
+    const score = t.score || calculateScore(t), si = getScoreInfo(score), dep = (t.depensesEssentielles || 0) + (t.depensesNonEssentielles || 0);
+    return `<tr style="border-bottom:1px solid var(--border-light)"><td style="padding:var(--space-sm)">${formatDate(t.date)}</td><td style="padding:var(--space-sm);text-align:right">${formatMoney(t.revenus)}</td><td style="padding:var(--space-sm);text-align:right">${formatMoney(dep)}</td><td style="padding:var(--space-sm);text-align:right;font-weight:600;color:${t.resteAVivre >= 0 ? 'var(--accent)' : '#dc2626'}">${formatMoney(t.resteAVivre)}</td><td style="padding:var(--space-sm);text-align:center"><span class="badge ${si.class}">${score}</span></td><td style="padding:var(--space-sm)"><button onclick="deleteTest(${tests.length - 1 - i})" style="background:none;border:none;color:#dc2626;cursor:pointer">🗑️</button></td></tr>`;
   }).join('');
 }
 
-function deleteTest(index) {
-  if (!confirm('Supprimer ce test ?')) return;
-  const tests = getData('tests', []);
-  tests.splice(index, 1);
-  setData('tests', tests);
-  
-  if (tests.length > 0) {
-    setData('lastTest', tests[tests.length - 1]);
-  } else {
-    localStorage.removeItem('lastTest');
-  }
-  initDashboard();
+function deleteTest(i) { if (!confirm('Supprimer ?')) return; const tests = getData('tests', []); tests.splice(i, 1); setData('tests', tests); if (tests.length > 0) setData('lastTest', tests[tests.length - 1]); else localStorage.removeItem('lastTest'); initDashboard(); }
+
+// === ÉPARGNE ===
+function renderEpargne(g) {
+  if (!g || g.objectif <= 0) { document.getElementById('objectif-montant').textContent = '0 €'; document.getElementById('epargne-actuelle').textContent = '0 €'; document.getElementById('epargne-restante').textContent = '0 €'; document.getElementById('epargne-mensuelle').textContent = '0 €'; document.getElementById('progress-percent').textContent = '0%'; document.getElementById('progress-fill').style.width = '0%'; return; }
+  const p = Math.min(100, Math.round((g.epargne / g.objectif) * 100)), r = Math.max(0, g.objectif - g.epargne);
+  document.getElementById('objectif-montant').textContent = formatMoney(g.objectif);
+  document.getElementById('epargne-actuelle').textContent = formatMoney(g.epargne);
+  document.getElementById('epargne-restante').textContent = formatMoney(r);
+  document.getElementById('epargne-mensuelle').textContent = formatMoney(r > 0 ? Math.ceil(r / 12) : 0);
+  document.getElementById('progress-percent').textContent = p + '%';
+  setTimeout(() => { document.getElementById('progress-fill').style.width = p + '%'; }, 300);
 }
 
-function openHistorique() {
-  const tests = getData('tests', []);
-  const content = document.getElementById('modal-historique-content');
-  
-  if (tests.length === 0) {
-    content.innerHTML = '<p style="text-align: center; color: var(--text-muted);">Aucun test</p>';
-  } else {
-    content.innerHTML = `
-      <table style="width: 100%; border-collapse: collapse; font-size: var(--text-sm);">
-        <thead>
-          <tr style="border-bottom: 2px solid var(--border-light);">
-            <th style="text-align: left; padding: var(--space-sm);">Date</th>
-            <th style="text-align: right; padding: var(--space-sm);">Revenus</th>
-            <th style="text-align: right; padding: var(--space-sm);">Dép. Ess.</th>
-            <th style="text-align: right; padding: var(--space-sm);">Dép. Non Ess.</th>
-            <th style="text-align: right; padding: var(--space-sm);">Reste</th>
-            <th style="text-align: center; padding: var(--space-sm);">Score</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${tests.slice().reverse().map(t => {
-            const score = t.score || calculateScore(t);
-            const scoreInfo = getScoreInfo(score);
-            return `
-              <tr style="border-bottom: 1px solid var(--border-light);">
-                <td style="padding: var(--space-sm);">${formatDate(t.date)}</td>
-                <td style="padding: var(--space-sm); text-align: right;">${formatMoney(t.revenus)}</td>
-                <td style="padding: var(--space-sm); text-align: right;">${formatMoney(t.depensesEssentielles)}</td>
-                <td style="padding: var(--space-sm); text-align: right;">${formatMoney(t.depensesNonEssentielles)}</td>
-                <td style="padding: var(--space-sm); text-align: right; font-weight: 600;">${formatMoney(t.resteAVivre)}</td>
-                <td style="padding: var(--space-sm); text-align: center;"><span class="badge ${scoreInfo.class}">${score}</span></td>
-              </tr>
-            `;
-          }).join('')}
-        </tbody>
-      </table>
-    `;
-  }
-  document.getElementById('modal-historique').style.display = 'flex';
+function saveVersement() { const m = parseFloat(document.getElementById('versement-montant').value) || 0; if (m <= 0) return alert('Montant invalide'); const g = getData('savingsGoal', { objectif: 0, epargne: 0 }); g.epargne = (g.epargne || 0) + m; setData('savingsGoal', g); document.getElementById('versement-montant').value = ''; closeModal('modal-versement'); initDashboard(); }
+function saveObjectif() { const o = parseFloat(document.getElementById('objectif-input').value) || 0, e = parseFloat(document.getElementById('epargne-input').value) || 0; setData('savingsGoal', { objectif: o, epargne: e }); closeModal('modal-objectif'); initDashboard(); }
+
+// === FUITES ===
+function renderFuites(subs, g) {
+  const list = document.getElementById('subscriptions-list');
+  if (!subs || subs.length === 0) list.innerHTML = '<li style="color:var(--text-muted)">Aucun</li>';
+  else list.innerHTML = subs.map((s, i) => `<li style="display:flex;justify-content:space-between"><span>${s.nom}</span><span><strong>${formatMoney(s.montant)}</strong> <button onclick="deleteAbo(${i})" style="background:none;border:none;color:#dc2626;cursor:pointer">✕</button></span></li>`).join('');
+  document.getElementById('gambling-amount').textContent = formatMoney(g);
+  document.getElementById('total-fuites').textContent = formatMoney((subs || []).reduce((a, b) => a + (b.montant || 0), 0) + (g || 0));
 }
 
-function closeHistorique() { document.getElementById('modal-historique').style.display = 'none'; }
+function saveAbonnement() { const n = document.getElementById('abo-nom').value.trim(), m = parseFloat(document.getElementById('abo-montant').value) || 0; if (!n || m <= 0) return alert('Champs invalides'); const subs = getData('subscriptions', []); subs.push({ nom: n, montant: m }); setData('subscriptions', subs); document.getElementById('abo-nom').value = ''; document.getElementById('abo-montant').value = ''; closeModal('modal-abonnement'); initDashboard(); }
+function deleteAbo(i) { const subs = getData('subscriptions', []); subs.splice(i, 1); setData('subscriptions', subs); initDashboard(); }
+function saveJeux() { setData('gambling', parseFloat(document.getElementById('jeux-montant').value) || 0); closeModal('modal-jeux'); initDashboard(); }
+function saveRappel() { setData('rappelConfig', { active: document.getElementById('rappel-toggle').checked, email: document.getElementById('rappel-email').value.trim() }); alert('Enregistré !'); }
 
-// Fermer modals en cliquant dehors
-document.addEventListener('click', (e) => {
-  ['modal-historique', 'modal-versement', 'modal-objectif', 'modal-abonnement', 'modal-jeux'].forEach(id => {
-    if (e.target.id === id) document.getElementById(id).style.display = 'none';
-  });
-});
+// === COMPARATEUR (Essentiel+) ===
+function comparerChoix() {
+  const plan = getData('plan', 'free');
+  if (!PLANS[plan]?.features.includes('comparateur')) { window.location.href = 'tarifs.html'; return; }
+  
+  const nomA = document.getElementById('choix-a-nom').value || 'Choix A';
+  const coutA = parseFloat(document.getElementById('choix-a-cout').value) || 0;
+  const dureeA = parseInt(document.getElementById('choix-a-duree').value) || 1;
+  const impactA = document.getElementById('choix-a-impact').value;
+  const nomB = document.getElementById('choix-b-nom').value || 'Choix B';
+  const coutB = parseFloat(document.getElementById('choix-b-cout').value) || 0;
+  const dureeB = parseInt(document.getElementById('choix-b-duree').value) || 1;
+  const impactB = document.getElementById('choix-b-impact').value;
+  
+  const totalA = coutA * dureeA, totalB = coutB * dureeB, diff = Math.abs(totalA - totalB);
+  
+  document.getElementById('result-a-mensuel').textContent = formatMoney(coutA);
+  document.getElementById('result-b-mensuel').textContent = formatMoney(coutB);
+  document.getElementById('result-a-total').textContent = formatMoney(totalA);
+  document.getElementById('result-b-total').textContent = formatMoney(totalB);
+  document.getElementById('result-difference').textContent = formatMoney(diff);
+  
+  let reco = '';
+  const box = document.getElementById('recommendation-box');
+  if (totalA < totalB) {
+    reco = `<strong style="color:var(--accent)">"${nomA}"</strong> coûte ${formatMoney(diff)} de moins.`;
+    if (impactA === 'positif') reco += ' Impact positif. Bon choix !';
+    box.style.borderColor = 'var(--accent)';
+  } else if (totalB < totalA) {
+    reco = `<strong style="color:#3b82f6">"${nomB}"</strong> coûte ${formatMoney(diff)} de moins.`;
+    if (impactB === 'positif') reco += ' Impact positif. Bon choix !';
+    box.style.borderColor = '#3b82f6';
+  } else {
+    reco = 'Même coût. Choisissez selon préférences.';
+    box.style.borderColor = '#6b7280';
+  }
+  document.getElementById('recommendation-text').innerHTML = reco;
+  document.getElementById('compare-result').style.display = 'block';
+  document.getElementById('compare-result').scrollIntoView({ behavior: 'smooth' });
+}
 
-// Démarrage
+// === SIMULATEUR IMPRÉVU (Complet uniquement) ===
+function simulerImprevu() {
+  const plan = getData('plan', 'free');
+  if (!PLANS[plan]?.features.includes('imprevu')) { window.location.href = 'tarifs.html'; return; }
+  
+  const lastTest = getData('lastTest', null);
+  if (!lastTest) { alert('Faites d\'abord un test.'); return; }
+  
+  const montant = parseFloat(document.getElementById('imprevu-montant').value) || 0;
+  const mois = parseInt(document.getElementById('imprevu-mois').value) || 1;
+  if (montant <= 0) { alert('Montant invalide.'); return; }
+  
+  const resteActuel = lastTest.resteAVivre || 0;
+  const coutMensuel = montant / mois;
+  const nouveauReste = resteActuel - coutMensuel;
+  const savingsGoal = getData('savingsGoal', { objectif: 0, epargne: 0 });
+  
+  let status, icon, title, message, impactEpargne;
+  const result = document.getElementById('simulator-result');
+  
+  if (nouveauReste >= resteActuel * 0.5) {
+    status = 'success'; icon = '✅'; title = 'Budget absorbable';
+    message = `Votre budget absorbe cet imprévu de ${formatMoney(montant)}.`;
+    impactEpargne = savingsGoal.epargne >= montant ? `Épargne (${formatMoney(savingsGoal.epargne)}) suffit.` : `Capacité épargne réduite de ${formatMoney(coutMensuel)}/mois.`;
+  } else if (nouveauReste >= 0) {
+    status = 'warning'; icon = '⚠️'; title = 'Tension financière';
+    message = `Imprévu de ${formatMoney(montant)} met budget sous tension.`;
+    impactEpargne = 'Pas d\'épargne possible pendant ' + mois + ' mois.';
+  } else {
+    status = 'danger'; icon = '❌'; title = 'Situation critique';
+    message = `Imprévu de ${formatMoney(montant)} dépasse capacité.`;
+    impactEpargne = savingsGoal.epargne > 0 ? `Puiser dans épargne (${formatMoney(savingsGoal.epargne)}).` : 'Solution alternative nécessaire.';
+  }
+  
+  result.className = 'simulator-result ' + status;
+  document.getElementById('simulator-icon').textContent = icon;
+  document.getElementById('simulator-title').textContent = title;
+  document.getElementById('simulator-message').textContent = message;
+  document.getElementById('sim-reste-actuel').textContent = formatMoney(resteActuel);
+  document.getElementById('sim-cout-mensuel').textContent = '-' + formatMoney(coutMensuel);
+  document.getElementById('sim-nouveau-reste').textContent = formatMoney(nouveauReste);
+  document.getElementById('sim-nouveau-reste').style.color = nouveauReste >= 0 ? 'var(--accent)' : '#dc2626';
+  document.getElementById('sim-impact-epargne').textContent = impactEpargne;
+  result.style.display = 'block';
+  result.scrollIntoView({ behavior: 'smooth' });
+}
+
+// === DÉMARRAGE ===
 document.addEventListener('DOMContentLoaded', initDashboard);
