@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Dashboard — Où part mon argent</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="brand">
+      <div class="logo">€</div>
+      <div>
+        <div class="brand-title">Dashboard</div>
+        <div class="brand-subtitle" id="userEmail">—</div>
+      </div>
+    </div>
+
+    <nav class="nav">
+      <a class="nav-link" href="index.html">Accueil</a>
+      <a class="nav-link" href="test.html">Test gratuit</a>
+      <a class="nav-link" href="tarifs.html">Tarifs</a>
+      <button class="btn btn-ghost" id="logoutBtn" type="button">Déconnexion</button>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="hero compact">
+      <h1 style="font-size:2rem;">Ton espace</h1>
+      <p class="lead" style="max-width:700px;">
+        Ici tu retrouveras tes résultats sauvegardés, tes objectifs et ton suivi.
+      </p>
+    </section>
+
+    <section class="grid-3">
+      <div class="card">
+        <h2>Résumé</h2>
+        <p class="small muted">Dernier calcul enregistré</p>
+        <div class="divider"></div>
+
+        <div class="mini-grid">
+          <div class="mini-card">
+            <div class="mini-title">Minimum vital / mois</div>
+            <div class="mini-value" id="mvMonth">—</div>
+          </div>
+          <div class="mini-card">
+            <div class="mini-title">Minimum vital / semaine</div>
+            <div class="mini-value" id="mvWeek">—</div>
+          </div>
+          <div class="mini-card">
+            <div class="mini-title">Reste à vivre / mois</div>
+            <div class="mini-value" id="ravMonth">—</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Objectif épargne</h2>
+        <p class="small muted">Paramètres rapides</p>
+        <div class="divider"></div>
+
+        <div class="form">
+          <div class="field">
+            <label for="goal">Objectif (€)</label>
+            <input id="goal" type="number" min="0" placeholder="10000" />
+          </div>
+          <div class="field">
+            <label for="perWeek">Épargne / semaine (€)</label>
+            <input id="perWeek" type="number" min="0" placeholder="50" />
+          </div>
+          <button class="btn full" id="saveGoal" type="button">Enregistrer</button>
+          <p class="small" id="goalMsg"></p>
+        </div>
+      </div>
+
+      <div class="card callout">
+        <h2>Actions</h2>
+        <ul class="list">
+          <li>Refaire une estimation</li>
+          <li>Comparer des décisions</li>
+          <li>Suivi semaine/mois</li>
+        </ul>
+        <a class="btn full" href="test.html">Faire un test</a>
+        <a class="btn btn-ghost full" href="tarifs.html">Voir les offres</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">© 2025 Où part mon argent</footer>
+
+  <script src="assets/auth.js"></script>
+  <script>
+    // PROTECTION
+    requireAuth("login.html");
+
+    // UI user
+    document.getElementById("userEmail").textContent = currentUserEmail();
+
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+      logout("login.html");
+    });
+
+    // --- Stockage dashboard (par utilisateur)
+    function keyForUser(suffix) {
+      return `user_${currentUserEmail()}_${suffix}`;
+    }
+
+    // Load last result (si tu sauvegardes depuis test.html plus tard)
+    document.getElementById("mvMonth").textContent = localStorage.getItem(keyForUser("mv_month")) || "—";
+    document.getElementById("mvWeek").textContent  = localStorage.getItem(keyForUser("mv_week")) || "—";
+    document.getElementById("ravMonth").textContent = localStorage.getItem(keyForUser("rav_month")) || "—";
+
+    // Goal save/load
+    const goal = document.getElementById("goal");
+    const perWeek = document.getElementById("perWeek");
+    const goalMsg = document.getElementById("goalMsg");
+
+    goal.value = localStorage.getItem(keyForUser("goal")) || "";
+    perWeek.value = localStorage.getItem(keyForUser("per_week")) || "";
+
+    document.getElementById("saveGoal").addEventListener("click", () => {
+      localStorage.setItem(keyForUser("goal"), goal.value.trim());
+      localStorage.setItem(keyForUser("per_week"), perWeek.value.trim());
+      goalMsg.textContent = "Enregistré ✅";
+      setTimeout(()=> goalMsg.textContent = "", 1500);
+    });
+  </script>
+</body>
+</html>
