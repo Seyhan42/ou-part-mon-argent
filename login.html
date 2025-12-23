@@ -2,88 +2,103 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Connexion — Où part mon argent</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Connexion — Où part mon argent ?</title>
+  <link rel="stylesheet" href="/css/style.css?v2">
 </head>
 <body>
-  <header class="site-header">
-    <div class="brand">
-      <div class="logo">€</div>
-      <div>
-        <div class="brand-title">Où part mon argent ?</div>
-        <div class="brand-subtitle">Clarté • Épargne • Décisions</div>
-      </div>
-    </div>
-    <nav class="nav">
-      <a class="nav-link" href="index.html">Accueil</a>
-      <a class="nav-link" href="test.html">Test gratuit</a>
-      <a class="nav-link" href="tarifs.html">Tarifs</a>
-      <a class="nav-link" href="register.html">Créer un compte</a>
-      <a class="nav-link active" href="login.html">Connexion</a>
-    </nav>
-  </header>
+  <main class="container" style="max-width:900px; padding-top:40px;">
+    <h1>Connexion</h1>
+    <p class="lead">Connecte-toi pour accéder au dashboard.</p>
 
-  <main class="container">
-    <section class="grid-2" style="margin-top:2rem;">
+    <div class="grid-2" style="margin-top:24px;">
       <div class="card">
         <h2>Se connecter</h2>
-        <p class="small">Accède à ton dashboard et retrouve tes résultats.</p>
-
-        <div class="divider"></div>
 
         <form id="loginForm" class="form">
           <div class="field">
-            <label for="email">Email</label>
+            <label>Email</label>
             <input id="email" type="email" placeholder="exemple@email.com" required />
           </div>
 
           <div class="field">
-            <label for="password">Mot de passe</label>
+            <label>Mot de passe</label>
             <input id="password" type="password" placeholder="••••••••" required />
           </div>
 
           <button class="btn full" type="submit">Se connecter</button>
-          <p id="msg" class="small" style="margin-top:.5rem;"></p>
+          <p id="msg" class="small" style="margin-top:10px;"></p>
         </form>
       </div>
 
       <div class="card callout">
         <h2>Créer un compte</h2>
-        <p class="small">Sauvegarde tes données, suis tes objectifs, reçois des rappels.</p>
-        <ul class="list">
-          <li>Dashboard personnel</li>
-          <li>Objectifs d’épargne</li>
-          <li>Suivi mois/semaine</li>
-        </ul>
-        <a class="btn btn-ghost full" href="register.html">Créer mon compte</a>
+        <p>Crée ton espace pour sauvegarder tes données et accéder au dashboard.</p>
+
+        <form id="signupForm" class="form" style="margin-top:14px;">
+          <div class="field">
+            <label>Email</label>
+            <input id="email2" type="email" placeholder="exemple@email.com" required />
+          </div>
+
+          <div class="field">
+            <label>Mot de passe</label>
+            <input id="password2" type="password" placeholder="••••••••" required />
+          </div>
+
+          <button class="btn full" type="submit">Créer un compte</button>
+          <p id="msg2" class="small" style="margin-top:10px;"></p>
+        </form>
       </div>
-    </section>
+    </div>
   </main>
 
-  <footer class="footer">© 2025 Où part mon argent</footer>
+  <!-- Supabase client -->
+  <script type="module" src="./supabase.js"></script>
 
-  <script src="assets/auth.js"></script>
-  <script>
-    // Si déjà connecté → dashboard
-    if (isLoggedIn()) window.location.href = "dashboard.html";
+  <script type="module">
+    const loginForm = document.getElementById("loginForm");
+    const signupForm = document.getElementById("signupForm");
 
-    const form = document.getElementById("loginForm");
     const msg = document.getElementById("msg");
+    const msg2 = document.getElementById("msg2");
 
-    form.addEventListener("submit", async (e) => {
+    // ✅ Si déjà connecté → dashboard
+    const { data: { session } } = await window.supabase.auth.getSession();
+    if (session) location.href = "/dashboard.html";
+
+    loginForm.addEventListener("submit", async (e) => {
       e.preventDefault();
-      msg.textContent = "";
+      msg.textContent = "Connexion...";
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
 
-      const email = document.getElementById("email").value;
-      const pass = document.getElementById("password").value;
-
-      const res = await loginUser(email, pass);
-      msg.textContent = res.message;
-
-      if (res.ok) {
-        window.location.href = "dashboard.html";
+      const { error } = await window.supabase.auth.signInWithPassword({ email, password });
+      if (error) {
+        msg.textContent = "❌ " + error.message;
+        return;
       }
+      msg.textContent = "✅ Connecté. Redirection…";
+      location.href = "/dashboard.html";
+    });
+
+    signupForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      msg2.textContent = "Création du compte...";
+      const email = document.getElementById("email2").value.trim();
+      const password = document.getElementById("password2").value;
+
+      const { error } = await window.supabase.auth.signUp({
+        email,
+        password,
+        options: { emailRedirectTo: "https://oupartmonargent.fr/dashboard.html" }
+      });
+
+      if (error) {
+        msg2.textContent = "❌ " + error.message;
+        return;
+      }
+      msg2.textContent = "✅ Compte créé. Vérifie tes emails si demandé.";
     });
   </script>
 </body>
