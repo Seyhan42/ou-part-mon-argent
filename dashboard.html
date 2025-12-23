@@ -1,314 +1,254 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-   <link rel="stylesheet" href="/css/style.css?v=2">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Tarifs — Où part mon argent ?</title>
-  <link rel="stylesheet" href="css/style.css">
+  <title>Dashboard – Où part mon argent ?</title>
+  <link rel="stylesheet" href="css/style.css?v=2">
+  <style>
+    .main { max-width: 1100px; margin: 0 auto; padding: var(--space-xl); }
+    .page-header { text-align: center; margin-bottom: var(--space-xl); }
+    .page-title { font-size: var(--text-3xl); margin-bottom: var(--space-xs); }
+    .page-subtitle { color: var(--text-muted); }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-md); }
+    .section { margin-top: var(--space-xl); }
+    .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-sm); }
+    .card-label { font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); font-weight: 600; }
+    .card-icon { width: 32px; height: 32px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-size: 16px; }
+    .card-icon.green { background: rgba(13,159,111,0.1); }
+    .card-icon.red { background: rgba(220,38,38,0.1); }
+    .card-icon.orange { background: rgba(245,158,11,0.1); }
+    .card-value { font-size: var(--text-2xl); font-weight: 700; color: var(--text-primary); }
+    .badge { font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: var(--radius-full); }
+    .badge.success { background: rgba(13,159,111,0.1); color: var(--accent); }
+    .badge.warning { background: rgba(245,158,11,0.1); color: #d97706; }
+    .badge.danger { background: rgba(220,38,38,0.1); color: #dc2626; }
+    .badge.locked { background: var(--bg-subtle); color: var(--text-muted); }
+    .plan-banner { background: var(--accent-subtle); border: 1px solid var(--accent-border); border-radius: var(--radius-lg); padding: var(--space-md) var(--space-lg); display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-xl); }
+    .plan-info { display: flex; align-items: center; gap: var(--space-md); }
+    .plan-label { font-size: var(--text-sm); color: var(--text-secondary); }
+    .plan-name { font-weight: 700; color: var(--accent); font-size: var(--text-lg); }
+    .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; }
+    .modal-content { background: white; border-radius: var(--radius-xl); max-width: 400px; width: 90%; padding: var(--space-xl); }
+    @media (max-width: 1024px) { .grid-4 { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 600px) { .grid-4 { grid-template-columns: 1fr; } .plan-banner { flex-direction: column; gap: var(--space-md); text-align: center; } }
+  </style>
 </head>
-  <script src="/assets/nav-auth.js"></script>
 <body>
+<script src="assets/nav-auth.js"></script>
 
 <header class="header">
   <div class="brand">
     <div class="logo">€</div>
     <div>
       <div class="brand-title">Où part mon argent ?</div>
-      <div class="brand-subtitle">Tarifs</div>
+      <div class="brand-subtitle">Dashboard</div>
+    </div>
+  </div>
+  <nav class="nav">
+    <a class="nav-link" href="index.html">Accueil</a>
+    <a class="nav-link" href="test.html">Test gratuit</a>
+    <a class="nav-link" href="tarifs.html">Tarifs</a>
+    <a class="nav-link" href="login.html" data-auth="out">Connexion</a>
+    <a class="nav-link active" href="dashboard.html" data-auth="in">Dashboard</a>
+    <button class="btn-ghost" type="button" data-auth="in" data-logout>Déconnexion</button>
+  </nav>
+</header>
+
+<main class="main">
+  <div class="plan-banner">
+    <div class="plan-info">
+      <span class="plan-label">Votre plan :</span>
+      <span class="plan-name" id="user-plan">Gratuit</span>
+    </div>
+    <a href="tarifs.html" class="btn btn-primary">Voir les offres</a>
+  </div>
+
+  <div class="page-header">
+    <h1 class="page-title">Tableau de bord</h1>
+    <p class="page-subtitle">Bienvenue ! Voici le résumé de votre situation financière.</p>
+  </div>
+
+  <!-- A) Résumé Financier -->
+  <div class="grid-4">
+    <div class="card">
+      <div class="card-header"><span class="card-label">Revenus</span><div class="card-icon green">💵</div></div>
+      <div class="card-value" id="revenus">—</div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-label">Dépenses essentielles</span><div class="card-icon red">🏠</div></div>
+      <div class="card-value" id="depenses-essentielles">—</div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-label">Dépenses non essentielles</span><div class="card-icon orange">🛍️</div></div>
+      <div class="card-value" id="depenses-non-essentielles">—</div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-label">Reste à vivre</span><div class="card-icon green">✨</div></div>
+      <div class="card-value" id="reste-a-vivre">—</div>
     </div>
   </div>
 
-  <nav class="nav">
-  <a class="nav-link" href="/index.html">Accueil</a>
-  <a class="nav-link" href="/test.html">Test gratuit</a>
-  <a class="nav-link" href="/tarifs.html">Tarifs</a>
+  <div class="card callout mt-lg" id="no-test-message" style="display: none; text-align: center;">
+    <h2>Pas encore de test</h2>
+    <p>Faites votre premier test pour voir votre résumé financier.</p>
+    <div class="cta-row" style="margin-top: var(--space-md);"><a href="test.html" class="btn btn-primary">Faire un test</a></div>
+  </div>
 
-  <!-- Visible si PAS connecté -->
- 
-  <a class="nav-link" href="/login.html" data-auth="out">Connexion</a>
-
-  <!-- Visible si connecté -->
-  <a class="nav-link" href="/dashboard.html" data-auth="in">Dashboard</a>
-  <button class="btn-ghost" type="button" data-auth="in" data-logout>
-    Déconnexion
-  </button>
-</nav>
-
-
-</header>
-
-
-
-  <!-- ========================================
-       CONTENU PRINCIPAL
-  ======================================== -->
-  <main class="main">
-    <div class="page-header">
-      <h1 class="page-title">Tableau de bord</h1>
-      <p class="page-subtitle">Bienvenue ! Voici le résumé de votre situation financière.</p>
-    </div>
-
-    <!-- Section : Résumé Financier -->
-    <div class="grid-4">
+  <!-- B) Dernier Test + C) Épargne -->
+  <div class="section">
+    <div class="grid-2">
       <div class="card">
-        <div class="card-header">
-          <span class="card-label">Revenus</span>
-          <div class="card-icon green">💵</div>
+        <div class="card-header"><h3>🎯 Dernier test financier</h3><span class="badge success" id="test-badge">—</span></div>
+        <div style="margin: var(--space-lg) 0; display: flex; align-items: center; gap: var(--space-lg);">
+          <div style="position: relative; width: 80px; height: 80px;">
+            <svg width="80" height="80" viewBox="0 0 80 80">
+              <circle cx="40" cy="40" r="35" fill="none" stroke="var(--border-light)" stroke-width="6"/>
+              <circle id="score-circle" cx="40" cy="40" r="35" fill="none" stroke="var(--accent)" stroke-width="6" stroke-dasharray="220" stroke-dashoffset="220" stroke-linecap="round" transform="rotate(-90 40 40)" style="transition: stroke-dashoffset 1s ease;"/>
+            </svg>
+            <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;">
+              <span style="font-size: var(--text-xl); font-weight: 700;" id="score-value">—</span>
+            </div>
+          </div>
+          <div>
+            <h4 id="test-title" style="margin-bottom: 4px;">—</h4>
+            <p id="test-description" style="font-size: var(--text-sm);">—</p>
+            <span style="font-size: var(--text-xs); color: var(--text-muted);" id="test-date">Dernier test : —</span>
+          </div>
         </div>
-        <div class="card-value" id="revenus">0 €</div>
-        <div class="card-change positive"><span>↑ 5.2%</span> vs mois dernier</div>
+        <div class="cta-row" style="justify-content: flex-start;">
+          <a href="test.html" class="btn btn-primary">🔄 Refaire un test</a>
+          <button class="btn btn-secondary" onclick="openHistorique()">📊 Historique</button>
+        </div>
       </div>
 
       <div class="card">
-        <div class="card-header">
-          <span class="card-label">Dépenses essentielles</span>
-          <div class="card-icon red">🏠</div>
-        </div>
-        <div class="card-value" id="depenses-essentielles">0 €</div>
-        <div class="card-change negative"><span>↑ 2.1%</span> vs mois dernier</div>
-      </div>
-
-      <div class="card">
-        <div class="card-header">
-          <span class="card-label">Dépenses non essentielles</span>
-          <div class="card-icon orange">🛍️</div>
-        </div>
-        <div class="card-value" id="depenses-non-essentielles">0 €</div>
-        <div class="card-change positive"><span>↓ 8.4%</span> vs mois dernier</div>
-      </div>
-
-      <div class="card">
-        <div class="card-header">
-          <span class="card-label">Reste à vivre</span>
-          <div class="card-icon green">✨</div>
-        </div>
-        <div class="card-value" id="reste-a-vivre">0 €</div>
-        <div class="card-change positive"><span>↑ 12.3%</span> vs mois dernier</div>
-      </div>
-    </div>
-
-    <!-- Sections Test + Épargne -->
-    <div class="section">
-      <div class="grid-2">
-        <!-- Section : Dernier Test -->
-        <div class="card-large">
-          <div class="card-large-header">
-            <h3 class="card-large-title">🎯 Dernier test financier</h3>
-            <span class="badge success" id="test-badge">Bonne santé</span>
+        <div class="card-header"><h3>💎 Objectif d'épargne</h3><span class="badge" id="savings-badge">—</span></div>
+        <div id="epargne-content">
+          <div style="text-align: center; margin: var(--space-md) 0;">
+            <span style="font-size: var(--text-xs); color: var(--text-muted); text-transform: uppercase;">Objectif total</span>
+            <div style="font-size: var(--text-2xl); font-weight: 700;" id="objectif-montant">0 €</div>
           </div>
-
-          <div class="test-content">
-            <div class="test-score">
-              <svg width="100" height="100" viewBox="0 0 100 100">
-                <circle class="test-score-bg" cx="50" cy="50" r="40"></circle>
-                <circle class="test-score-fill" id="score-circle" cx="50" cy="50" r="40"></circle>
-              </svg>
-              <div class="test-score-value">
-                <strong id="score-value">0</strong>
-                <span>/100</span>
-              </div>
+          <div style="margin: var(--space-md) 0;">
+            <div style="display: flex; justify-content: space-between; font-size: var(--text-sm); margin-bottom: 6px;">
+              <span>Progression</span><span id="progress-percent">0%</span>
             </div>
-
-            <div class="test-info">
-              <h4 id="test-title">Bonne gestion budgétaire</h4>
-              <p id="test-description">
-                Votre situation financière est saine. Continuez à épargner régulièrement pour atteindre vos objectifs.
-              </p>
-              <span class="test-date" id="test-date">Dernier test : --</span>
+            <div style="height: 8px; background: var(--bg-subtle); border-radius: var(--radius-full); overflow: hidden;">
+              <div id="progress-fill" style="height: 100%; background: var(--accent); width: 0%; transition: width 1s ease;"></div>
             </div>
           </div>
-
-          <div class="btn-group">
-            <a href="/test.html" class="btn btn-primary">🔄 Refaire un test</a>
-            <button class="btn btn-secondary" type="button">📊 Voir l'historique</button>
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-sm); text-align: center; margin: var(--space-lg) 0;">
+            <div><div style="font-size: var(--text-lg); font-weight: 700; color: var(--accent);" id="epargne-actuelle">0 €</div><div style="font-size: var(--text-xs); color: var(--text-muted);">Épargné</div></div>
+            <div><div style="font-size: var(--text-lg); font-weight: 700; color: #d97706;" id="epargne-restante">0 €</div><div style="font-size: var(--text-xs); color: var(--text-muted);">Restant</div></div>
+            <div><div style="font-size: var(--text-lg); font-weight: 700;" id="epargne-mensuelle">0 €</div><div style="font-size: var(--text-xs); color: var(--text-muted);">Conseillé/mois</div></div>
+          </div>
+          <div class="cta-row" style="justify-content: flex-start;">
+            <button class="btn btn-primary" onclick="ajouterVersement()">➕ Versement</button>
+            <button class="btn btn-secondary" onclick="modifierObjectif()">⚙️ Modifier</button>
           </div>
         </div>
-
-        <!-- Section : Objectif d'Épargne -->
-        <div class="card-large">
-          <div class="card-large-header">
-            <h3 class="card-large-title">💎 Objectif d'épargne</h3>
-            <span class="badge warning" id="savings-badge">En cours</span>
-          </div>
-
-          <div class="savings-goal">
-            <span class="savings-label">Objectif total</span>
-            <div class="savings-amount" id="objectif-montant">0 €</div>
-          </div>
-
-          <div class="progress-section">
-            <div class="progress-header">
-              <span class="progress-label">Progression</span>
-              <span class="progress-value" id="progress-percent">0%</span>
-            </div>
-            <div class="progress-bar">
-              <div class="progress-fill" id="progress-fill"></div>
-            </div>
-          </div>
-
-          <div class="savings-stats">
-            <div class="savings-stat">
-              <div class="savings-stat-value green" id="epargne-actuelle">0 €</div>
-              <div class="savings-stat-label">Épargné</div>
-            </div>
-            <div class="savings-stat">
-              <div class="savings-stat-value orange" id="epargne-restante">0 €</div>
-              <div class="savings-stat-label">Restant</div>
-            </div>
-            <div class="savings-stat">
-              <div class="savings-stat-value" id="epargne-mensuelle">0 €</div>
-              <div class="savings-stat-label">Conseillé / mois</div>
-            </div>
-          </div>
-
-          <div class="btn-group">
-            <button class="btn btn-primary" type="button">➕ Ajouter un versement</button>
-            <button class="btn btn-secondary" type="button">⚙️ Modifier</button>
-          </div>
+        <div id="epargne-locked" style="display: none; text-align: center; padding: var(--space-lg);">
+          <div style="font-size: 48px;">🔒</div>
+          <h4>Fonctionnalité Premium</h4>
+          <p style="font-size: var(--text-sm);">Disponible avec le plan Essentiel ou Complet.</p>
+          <a href="tarifs.html" class="btn btn-primary" style="margin-top: var(--space-md);">Voir les offres</a>
         </div>
       </div>
     </div>
-  </main>
+  </div>
 
-  <!-- Scripts -->
-  <script src="/nav-auth.js"></script>
+  <!-- E) Fuites -->
+  <div class="section">
+    <div class="card">
+      <div class="card-header"><h3>💸 Fuites : abonnements & jeux</h3><span class="badge" id="fuites-badge">—</span></div>
+      <div id="fuites-content">
+        <p style="font-size: var(--text-sm); color: var(--text-muted); margin-bottom: var(--space-md);">Identifiez vos dépenses invisibles.</p>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg);">
+          <div>
+            <h4 style="font-size: var(--text-sm); margin-bottom: var(--space-sm);">📺 Abonnements</h4>
+            <ul class="list" id="subscriptions-list"><li>Aucun abonnement</li></ul>
+            <button class="btn btn-secondary" style="margin-top: var(--space-sm);" onclick="ajouterAbonnement()">+ Ajouter</button>
+          </div>
+          <div>
+            <h4 style="font-size: var(--text-sm); margin-bottom: var(--space-sm);">🎰 Jeux d'argent</h4>
+            <div style="background: var(--bg-subtle); padding: var(--space-md); border-radius: var(--radius-md);">
+              <div style="font-size: var(--text-2xl); font-weight: 700;" id="gambling-amount">0 €</div>
+              <div style="font-size: var(--text-xs); color: var(--text-muted);">par mois</div>
+            </div>
+            <button class="btn btn-secondary" style="margin-top: var(--space-sm);" onclick="modifierJeux()">Modifier</button>
+          </div>
+        </div>
+        <div style="margin-top: var(--space-lg); padding: var(--space-md); background: rgba(220,38,38,0.05); border-radius: var(--radius-md); border: 1px solid rgba(220,38,38,0.2); display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-weight: 600; color: #dc2626;">💰 Total fuites</span>
+          <span style="font-size: var(--text-xl); font-weight: 700; color: #dc2626;" id="total-fuites">0 €</span>
+        </div>
+      </div>
+      <div id="fuites-locked" style="display: none; text-align: center; padding: var(--space-lg);">
+        <div style="font-size: 48px;">🔒</div>
+        <h4>Fonctionnalité Premium</h4>
+        <a href="tarifs.html" class="btn btn-primary" style="margin-top: var(--space-md);">Voir les offres</a>
+      </div>
+    </div>
+  </div>
 
-  <script>
-    // ✅ Protection : si pas connecté -> login
-    if (localStorage.getItem('auth') !== '1') {
-      window.location.href = '/login.html';
-    }
+  <!-- F) Rappels -->
+  <div class="section">
+    <div class="card">
+      <div class="card-header"><h3>📧 Rappels email</h3><span class="badge" id="rappels-badge">—</span></div>
+      <div id="rappels-content">
+        <div style="display: flex; align-items: center; gap: var(--space-lg); flex-wrap: wrap;">
+          <label style="display: flex; align-items: center; gap: var(--space-sm); cursor: pointer;">
+            <input type="checkbox" id="rappel-toggle" style="width: 18px; height: 18px;">
+            <span>Rappel hebdomadaire</span>
+          </label>
+          <div class="field" style="flex: 1; min-width: 200px;">
+            <label for="rappel-email">Email</label>
+            <input type="email" id="rappel-email" placeholder="votre@email.com">
+          </div>
+          <button class="btn btn-primary" onclick="saveRappel()">Enregistrer</button>
+        </div>
+        <div class="hint" style="margin-top: var(--space-md);">ℹ️ Fonctionnalité bientôt disponible.</div>
+      </div>
+      <div id="rappels-locked" style="display: none; text-align: center; padding: var(--space-lg);">
+        <div style="font-size: 48px;">🔒</div>
+        <h4>Fonctionnalité Premium</h4>
+        <a href="tarifs.html" class="btn btn-primary" style="margin-top: var(--space-md);">Voir les offres</a>
+      </div>
+    </div>
+  </div>
 
-    // ============================================
-    // DONNÉES EXEMPLES
-    // ============================================
-    const financialData = {
-      revenus: 3850,
-      depensesEssentielles: 1920,
-      depensesNonEssentielles: 580,
-      resteAVivre: 1350,
-      objectifEpargne: 15000,
-      epargneActuelle: 9750,
-      epargneMensuelleConseillee: 450
-    };
+  <!-- D) Historique -->
+  <div class="section">
+    <div class="card">
+      <div class="card-header"><h3>📋 Historique des tests</h3><span class="badge" id="historique-count">0 tests</span></div>
+      <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; font-size: var(--text-sm);">
+          <thead>
+            <tr style="border-bottom: 2px solid var(--border-light);">
+              <th style="text-align: left; padding: var(--space-sm); color: var(--text-muted);">Date</th>
+              <th style="text-align: right; padding: var(--space-sm); color: var(--text-muted);">Revenus</th>
+              <th style="text-align: right; padding: var(--space-sm); color: var(--text-muted);">Dépenses</th>
+              <th style="text-align: right; padding: var(--space-sm); color: var(--text-muted);">Reste</th>
+              <th style="text-align: center; padding: var(--space-sm); color: var(--text-muted);">Score</th>
+              <th style="padding: var(--space-sm);"></th>
+            </tr>
+          </thead>
+          <tbody id="historique-table"><tr><td colspan="6" style="text-align: center; padding: var(--space-lg); color: var(--text-muted);">Aucun test</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</main>
 
-    const testData = {
-      score: 78,
-      date: '15 décembre 2024',
-      titre: 'Bonne gestion budgétaire',
-      description: 'Votre situation financière est saine. Continuez à épargner régulièrement pour atteindre vos objectifs.'
-    };
+<!-- MODALS -->
+<div id="modal-historique" class="modal"><div class="modal-content" style="max-width: 800px;"><div style="display: flex; justify-content: space-between; margin-bottom: var(--space-lg);"><h2>📊 Historique</h2><button onclick="closeHistorique()" style="background: none; border: none; font-size: 24px; cursor: pointer;">×</button></div><div id="modal-historique-content"></div></div></div>
+<div id="modal-versement" class="modal"><div class="modal-content"><h2 style="margin-bottom: var(--space-lg);">➕ Versement</h2><div class="field"><label>Montant (€)</label><input type="number" id="versement-montant" placeholder="100"></div><div class="cta-row" style="margin-top: var(--space-lg);"><button class="btn btn-primary" onclick="saveVersement()">Ajouter</button><button class="btn btn-secondary" onclick="closeVersement()">Annuler</button></div></div></div>
+<div id="modal-objectif" class="modal"><div class="modal-content"><h2 style="margin-bottom: var(--space-lg);">⚙️ Objectif</h2><div class="field" style="margin-bottom: var(--space-md);"><label>Objectif (€)</label><input type="number" id="objectif-input" placeholder="15000"></div><div class="field"><label>Épargne actuelle (€)</label><input type="number" id="epargne-input" placeholder="3000"></div><div class="cta-row" style="margin-top: var(--space-lg);"><button class="btn btn-primary" onclick="saveObjectif()">Enregistrer</button><button class="btn btn-secondary" onclick="closeObjectif()">Annuler</button></div></div></div>
+<div id="modal-abonnement" class="modal"><div class="modal-content"><h2 style="margin-bottom: var(--space-lg);">📺 Abonnement</h2><div class="field" style="margin-bottom: var(--space-md);"><label>Nom</label><input type="text" id="abo-nom" placeholder="Netflix..."></div><div class="field"><label>Montant (€)</label><input type="number" id="abo-montant" placeholder="15.99" step="0.01"></div><div class="cta-row" style="margin-top: var(--space-lg);"><button class="btn btn-primary" onclick="saveAbonnement()">Ajouter</button><button class="btn btn-secondary" onclick="closeAbonnement()">Annuler</button></div></div></div>
+<div id="modal-jeux" class="modal"><div class="modal-content"><h2 style="margin-bottom: var(--space-lg);">🎰 Jeux d'argent</h2><div class="field"><label>Montant mensuel (€)</label><input type="number" id="jeux-montant" placeholder="50"></div><div class="cta-row" style="margin-top: var(--space-lg);"><button class="btn btn-primary" onclick="saveJeux()">Enregistrer</button><button class="btn btn-secondary" onclick="closeJeux()">Annuler</button></div></div></div>
 
-    // ============================================
-    // FONCTIONS UTILITAIRES
-    // ============================================
-    function formatMoney(amount) {
-      return new Intl.NumberFormat('fr-FR', {
-        style: 'currency',
-        currency: 'EUR',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0
-      }).format(amount);
-    }
+<footer class="footer"><a href="tarifs.html">Tarifs</a> · <a href="index.html">Accueil</a> · <span class="muted">© <span id="year"></span> Où part mon argent</span></footer>
 
-    function animateValue(element, start, end, duration, formatter) {
-      let startTime = null;
-
-      function step(timestamp) {
-        if (!startTime) startTime = timestamp;
-        const progress = Math.min((timestamp - startTime) / duration, 1);
-        const value = Math.floor(progress * (end - start) + start);
-        element.textContent = formatter ? formatter(value) : value;
-
-        if (progress < 1) requestAnimationFrame(step);
-      }
-      requestAnimationFrame(step);
-    }
-
-    // ============================================
-    // INITIALISATION
-    // ============================================
-    function initDashboard() {
-      // Animer les valeurs financières
-      animateValue(document.getElementById('revenus'), 0, financialData.revenus, 800, formatMoney);
-      animateValue(document.getElementById('depenses-essentielles'), 0, financialData.depensesEssentielles, 800, formatMoney);
-      animateValue(document.getElementById('depenses-non-essentielles'), 0, financialData.depensesNonEssentielles, 800, formatMoney);
-      animateValue(document.getElementById('reste-a-vivre'), 0, financialData.resteAVivre, 800, formatMoney);
-
-      // Section Test
-      initTestSection();
-
-      // Section Épargne
-      initSavingsSection();
-
-      // ✅ Met à jour la nav (au cas où)
-      if (window.authManager && window.authManager.updateNavigation) {
-        window.authManager.updateNavigation();
-      }
-    }
-
-    function initTestSection() {
-      // Score circulaire
-      const circumference = 2 * Math.PI * 40;
-      const offset = circumference - (testData.score / 100) * circumference;
-      const scoreCircle = document.getElementById('score-circle');
-
-      setTimeout(() => {
-        scoreCircle.style.strokeDashoffset = offset;
-      }, 200);
-
-      animateValue(document.getElementById('score-value'), 0, testData.score, 1000);
-
-      // Infos
-      document.getElementById('test-title').textContent = testData.titre;
-      document.getElementById('test-description').textContent = testData.description;
-      document.getElementById('test-date').textContent = 'Dernier test : ' + testData.date;
-    }
-
-    function initSavingsSection() {
-      const progressPercent = Math.round((financialData.epargneActuelle / financialData.objectifEpargne) * 100);
-      const restant = financialData.objectifEpargne - financialData.epargneActuelle;
-
-      document.getElementById('objectif-montant').textContent = formatMoney(financialData.objectifEpargne);
-
-      animateValue(document.getElementById('epargne-actuelle'), 0, financialData.epargneActuelle, 800, formatMoney);
-      document.getElementById('epargne-restante').textContent = formatMoney(restant);
-      document.getElementById('epargne-mensuelle').textContent = formatMoney(financialData.epargneMensuelleConseillee);
-
-      // Barre de progression
-      setTimeout(() => {
-        document.getElementById('progress-fill').style.width = progressPercent + '%';
-      }, 200);
-
-      animateValue(document.getElementById('progress-percent'), 0, progressPercent, 800, v => v + '%');
-    }
-
-    // ============================================
-    // MENU MOBILE (corrigé)
-    // ============================================
-    function toggleMenu() {
-      const nav = document.getElementById('nav');
-      const btn = document.querySelector('.menu-toggle');
-      const isOpen = nav.classList.toggle('open');
-      if (btn) btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-    }
-
-    // Fermer le menu si on clique à l'extérieur (mobile)
-    document.addEventListener('click', (e) => {
-      const nav = document.getElementById('nav');
-      const btn = document.querySelector('.menu-toggle');
-      if (!nav || !btn) return;
-
-      const clickedInside = nav.contains(e.target) || btn.contains(e.target);
-      if (!clickedInside && nav.classList.contains('open')) {
-        nav.classList.remove('open');
-        btn.setAttribute('aria-expanded', 'false');
-      }
-    });
-
-    // Démarrer
-    document.addEventListener('DOMContentLoaded', initDashboard);
-  </script>
+<script src="js/dashboard.js"></script>
 </body>
 </html>
