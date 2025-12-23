@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Connexion — Où part mon argent ?</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
@@ -28,23 +28,23 @@
 <main class="container">
   <section class="hero compact">
     <h1>Connexion</h1>
-    <p class="lead">Connectez-vous pour accéder à votre dashboard.</p>
+    <p class="lead">Connectez-vous pour accéder à votre dashboard personnel.</p>
   </section>
 
-  <section class="grid-2">
+  <section class="login-grid">
     <div class="card">
       <h2>Se connecter</h2>
       <form class="form" onsubmit="return false;">
         <div class="field">
-          <label>Email</label>
-          <input type="email" placeholder="exemple@email.com">
+          <label for="email">Email</label>
+          <input id="email" type="email" placeholder="exemple@email.com">
         </div>
         <div class="field">
-          <label>Mot de passe</label>
-          <input type="password" placeholder="••••••••">
+          <label for="password">Mot de passe</label>
+          <input id="password" type="password" placeholder="••••••••">
         </div>
-        <button class="btn btn-primary full">Se connecter</button>
-        <p class="muted small" style="margin-top:10px;">(Connexion active à partir de Jour 5)</p>
+        <button class="btn btn-primary full" type="submit">Se connecter</button>
+        <p class="muted small mt-sm">(Connexion active à partir de Jour 5)</p>
       </form>
     </div>
 
@@ -53,7 +53,7 @@
       <p>Créez votre espace pour sauvegarder vos données, suivre vos mois et recevoir vos rappels.</p>
       <ul class="list">
         <li>Dashboard personnalisé</li>
-        <li>Objectifs d’épargne</li>
+        <li>Objectifs d'épargne</li>
         <li>Imprévus & comparaisons</li>
       </ul>
       <a class="btn btn-ghost full" href="tarifs.html">Voir les offres</a>
@@ -73,4 +73,3 @@
 
 </body>
 </html>
-<link rel="stylesheet" href="css/style.css" />
