@@ -2,96 +2,182 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Test gratuit – Où part mon argent</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Test gratuit — Où part mon argent ?</title>
+  <meta name="description" content="Test gratuit : estimez votre minimum vital et votre reste à vivre en 2 minutes.">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
-<header>
-  <strong>Où part mon argent ?</strong>
+<header class="header">
+  <div class="brand">
+    <div class="logo">€</div>
+    <div>
+      <div class="brand-title">Où part mon argent ?</div>
+      <div class="brand-subtitle">Test gratuit</div>
+    </div>
+  </div>
+
   <nav class="nav">
-    <a href="index.html">Accueil</a>
-    <a class="active" href="test.html">Test gratuit</a>
-    <a href="tarifs.html">Tarifs</a>
-    <a href="login.html">Connexion</a>
+    <a class="nav-link" href="index.html">Accueil</a>
+    <a class="nav-link active" href="test.html">Test gratuit</a>
+    <a class="nav-link" href="tarifs.html">Tarifs</a>
+    <a class="nav-link" href="login.html">Connexion</a>
   </nav>
 </header>
 
 <main class="container">
-  <div class="card">
-    <h2>Test gratuit</h2>
-    <p>Estimez votre minimum vital et votre reste à vivre.</p>
+  <div class="test-container">
+    <section class="card">
+      <h1>Test gratuit</h1>
+      <p class="lead">
+        Entrez des montants approximatifs pour obtenir une estimation de votre
+        <strong>minimum vital</strong> et de votre <strong>reste à vivre</strong>.
+      </p>
 
-    <form id="calcForm">
-      <label>Revenu mensuel (€)</label>
-      <input id="revenu" type="number" required>
-
-      <label>Loyer / logement (€)</label>
-      <input id="logement" type="number" required>
-
-      <label>Charges fixes (€)</label>
-      <input id="charges" type="number" required>
-
-      <label>Courses + transport (€)</label>
-      <input id="courses" type="number" required>
-
-      <label>Abonnements (€)</label>
-      <input id="abonnements" type="number" value="0">
-
-      <label>Jeux / casino (€)</label>
-      <input id="jeux" type="number" value="0">
-
-      <input type="submit" value="Calculer">
-    </form>
-
-    <p style="margin-top:15px;color:#94a3b8;">
-      🔒 Ce test ne sauvegarde rien. Aucune donnée bancaire demandée.  
-      Pour un tableau de bord + suivi + rappels email, créez un compte ensuite.
-    </p>
-
-    <div id="resultats" style="display:none;">
-      <h3 style="margin-top:30px;">Votre estimation</h3>
-
-      <div class="result-grid">
-        <div class="result-box">
-          Minimum vital / mois
-          <span id="mv"></span>
+      <form class="form" id="freeTestForm">
+        <div class="form-row">
+          <div class="field">
+            <label for="income">Revenu mensuel net (€)</label>
+            <input id="income" name="income" type="number" min="0" step="1" placeholder="Ex : 1800" required>
+          </div>
+          <div class="field">
+            <label for="rent">Logement / loyer (€)</label>
+            <input id="rent" name="rent" type="number" min="0" step="1" placeholder="Ex : 650" required>
+          </div>
         </div>
-        <div class="result-box">
-          Minimum vital / semaine
-          <span id="mvw"></span>
-        </div>
-        <div class="result-box">
-          Reste à vivre / mois
-          <span id="reste"></span>
-        </div>
-      </div>
 
-      <div class="cta">
-        <a class="btn btn-primary" href="register.html">Commencer maintenant</a>
-        <a class="btn btn-secondary" href="tarifs.html">Voir les offres</a>
-      </div>
-    </div>
+        <div class="form-row">
+          <div class="field">
+            <label for="fixed">Charges fixes (internet, assurances…) (€)</label>
+            <input id="fixed" name="fixed" type="number" min="0" step="1" placeholder="Ex : 220" required>
+          </div>
+          <div class="field">
+            <label for="variable">Courses + transport (estimation) (€)</label>
+            <input id="variable" name="variable" type="number" min="0" step="1" placeholder="Ex : 450" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="field">
+            <label for="subs">Abonnements (Netflix, tel…) (€) <span class="muted">(optionnel)</span></label>
+            <input id="subs" name="subs" type="number" min="0" step="1" placeholder="Ex : 40">
+          </div>
+          <div class="field">
+            <label for="risk">Jeux d'argent / casino (€) <span class="muted">(optionnel)</span></label>
+            <input id="risk" name="risk" type="number" min="0" step="1" placeholder="Ex : 0">
+          </div>
+        </div>
+
+        <button class="btn btn-primary" type="submit">Calculer</button>
+
+        <p class="hint">
+          Ce test ne sauvegarde rien. Pour un tableau de bord + suivi + rappels email, créez un compte ensuite.
+        </p>
+      </form>
+
+      <div class="divider"></div>
+
+      <section id="result" class="result-box" style="display:none;">
+        <h2>Votre estimation</h2>
+
+        <div class="mini-grid">
+          <div class="mini-card">
+            <div class="mini-title">Minimum vital (mois)</div>
+            <div class="mini-value" id="outMinMonth">—</div>
+          </div>
+          <div class="mini-card">
+            <div class="mini-title">Minimum vital (semaine)</div>
+            <div class="mini-value" id="outMinWeek">—</div>
+          </div>
+          <div class="mini-card">
+            <div class="mini-title">Reste à vivre (mois)</div>
+            <div class="mini-value" id="outLeftMonth">—</div>
+          </div>
+        </div>
+
+        <div class="card mt-md" style="background: var(--bg-subtle); border: 1px solid var(--border-light);">
+          <div class="mini-title">Lecture rapide</div>
+          <p style="font-size: 1rem; font-weight: 600; color: var(--text-primary); margin: 8px 0;" id="outMessage">—</p>
+          <p class="muted small" id="outTip"></p>
+        </div>
+
+        <div class="cta-row mt-lg">
+          <a class="btn btn-primary" href="login.html">Créer un compte</a>
+          <a class="btn btn-secondary" href="tarifs.html">Voir les offres</a>
+        </div>
+      </section>
+    </section>
   </div>
 </main>
 
-<footer>© 2025 Où part mon argent</footer>
+<footer class="footer">
+  <span>© <span id="year"></span> Où part mon argent</span>
+</footer>
 
 <script>
-document.getElementById("calcForm").addEventListener("submit", function(e){
-  e.preventDefault();
+  document.getElementById("year").textContent = new Date().getFullYear();
 
-  const revenu = +revenu.value;
-  const total = +logement.value + +charges.value + +courses.value + +abonnements.value + +jeux.value;
+  const eur = (n) => new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(n);
+  const WEEKS_PER_MONTH = 4.33;
 
-  const reste = revenu - total;
+  function toNumber(id) {
+    const v = document.getElementById(id).value;
+    if (v === "" || v === null || v === undefined) return 0;
+    const n = Number(v);
+    return Number.isFinite(n) && n >= 0 ? n : 0;
+  }
 
-  document.getElementById("mv").innerText = total.toFixed(2) + " €";
-  document.getElementById("mvw").innerText = (total / 4.33).toFixed(2) + " €";
-  document.getElementById("reste").innerText = reste.toFixed(2) + " €";
+  function clamp(n) {
+    return Number.isFinite(n) ? n : 0;
+  }
 
-  document.getElementById("resultats").style.display = "block";
-});
+  document.getElementById("freeTestForm").addEventListener("submit", (e) => {
+    e.preventDefault();
+
+    const income = toNumber("income");
+    const rent = toNumber("rent");
+    const fixed = toNumber("fixed");
+    const variable = toNumber("variable");
+    const subs = toNumber("subs");
+    const risk = toNumber("risk");
+
+    const minMonth = clamp(rent + fixed + variable + subs + risk);
+    const minWeek = clamp(minMonth / WEEKS_PER_MONTH);
+    const leftMonth = clamp(income - minMonth);
+
+    document.getElementById("outMinMonth").textContent = eur(minMonth);
+    document.getElementById("outMinWeek").textContent = eur(minWeek);
+    document.getElementById("outLeftMonth").textContent = eur(leftMonth);
+
+    let message = "";
+    let tip = "";
+
+    if (income === 0) {
+      message = "Entrez un revenu pour obtenir une estimation fiable.";
+      tip = "Si vous n'avez pas de revenu fixe, mettez une moyenne mensuelle.";
+    } else if (leftMonth < 0) {
+      message = "🔴 Vous dépensez plus que votre revenu (déficit).";
+      tip = "La priorité : réduire abonnements/risques et ajuster les variables (courses/transport) dès cette semaine.";
+    } else if (leftMonth < income * 0.10) {
+      message = "🟠 Vous avez peu de marge (reste à vivre faible).";
+      tip = "Objectif : remonter votre marge à 10–15% du revenu (petites coupes régulières).";
+    } else {
+      message = "🟢 Vous avez une marge correcte. Vous pouvez structurer une épargne.";
+      tip = "Fixez un objectif (ex : voiture 10 000 €) et mettez en place un montant par semaine.";
+    }
+
+    const leaks = subs + risk;
+    if (leaks >= 50) {
+      tip += ` (Info : vos postes "abonnements/risque" totalisent ${eur(leaks)} / mois.)`;
+    }
+
+    document.getElementById("outMessage").textContent = message;
+    document.getElementById("outTip").textContent = tip;
+
+    document.getElementById("result").style.display = "block";
+    document.getElementById("result").scrollIntoView({ behavior: "smooth", block: "start" });
+  });
 </script>
 
 </body>
