@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Créer un compte — Où part mon argent</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="brand">
+      <div class="logo">€</div>
+      <div>
+        <div class="brand-title">Où part mon argent ?</div>
+        <div class="brand-subtitle">Clarté • Épargne • Décisions</div>
+      </div>
+    </div>
+    <nav class="nav">
+      <a class="nav-link" href="index.html">Accueil</a>
+      <a class="nav-link" href="test.html">Test gratuit</a>
+      <a class="nav-link" href="tarifs.html">Tarifs</a>
+      <a class="nav-link active" href="register.html">Créer un compte</a>
+      <a class="nav-link" href="login.html">Connexion</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="card" style="max-width:720px;margin:2rem auto;">
+      <h2>Créer un compte</h2>
+      <p class="small">Crée ton espace pour sauvegarder tes résultats et accéder au dashboard.</p>
+
+      <div class="divider"></div>
+
+      <form id="registerForm" class="form">
+        <div class="field">
+          <label for="email">Email</label>
+          <input id="email" type="email" placeholder="exemple@email.com" required />
+        </div>
+
+        <div class="form-row">
+          <div class="field">
+            <label for="password">Mot de passe</label>
+            <input id="password" type="password" placeholder="Minimum 6 caractères" required />
+          </div>
+          <div class="field">
+            <label for="password2">Confirmer</label>
+            <input id="password2" type="password" placeholder="Répète le mot de passe" required />
+          </div>
+        </div>
+
+        <button class="btn full" type="submit">Créer mon compte</button>
+
+        <p id="msg" class="small" style="margin-top:.5rem;"></p>
+
+        <p class="small">
+          Déjà un compte ? <a href="login.html">Se connecter</a>
+        </p>
+      </form>
+    </section>
+  </main>
+
+  <footer class="footer">© 2025 Où part mon argent</footer>
+
+  <script src="assets/auth.js"></script>
+  <script>
+    // Si déjà connecté → dashboard
+    if (isLoggedIn()) window.location.href = "dashboard.html";
+
+    const form = document.getElementById("registerForm");
+    const msg = document.getElementById("msg");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      msg.textContent = "";
+
+      const email = document.getElementById("email").value;
+      const p1 = document.getElementById("password").value;
+      const p2 = document.getElementById("password2").value;
+
+      if (p1 !== p2) {
+        msg.textContent = "Les mots de passe ne correspondent pas.";
+        return;
+      }
+
+      const res = await registerUser(email, p1);
+      msg.textContent = res.message;
+
+      if (res.ok) {
+        window.location.href = "dashboard.html";
+      }
+    });
+  </script>
+</body>
+</html>
