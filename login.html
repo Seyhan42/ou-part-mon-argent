@@ -1,78 +1,244 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Connexion — Où part mon argent ?</title>
-
-  <!-- Ton CSS global -->
-  <link rel="stylesheet" href="/css/style.css?v=2" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Connexion – Où part mon argent ?</title>
+  <link rel="stylesheet" href="css/style.css?v=2">
 </head>
-
 <body>
-  <header class="header">
-    <div class="header-container">
-      <a href="/index.html" class="logo">€</a>
 
-      <nav class="top-nav" id="nav">
-        <a href="/index.html">Accueil</a>
-        <a href="/test.html">Test gratuit</a>
-        <a href="/tarifs.html">Tarifs</a>
-
-        <a href="/login.html" data-auth="logged-out" class="active">Connexion</a>
-
-        <a href="/dashboard.html" data-auth="logged-in">Dashboard</a>
-        <a href="#" data-auth="logged-in" data-action="logout">Déconnexion</a>
-      </nav>
+<header class="header">
+  <div class="brand">
+    <div class="logo">€</div>
+    <div>
+      <div class="brand-title">Où part mon argent ?</div>
+      <div class="brand-subtitle">Connexion</div>
     </div>
-  </header>
+  </div>
 
-  <main class="container" style="padding:32px 16px;max-width:520px;">
-    <h1 style="margin-bottom:8px;">Connexion</h1>
-    <p style="margin-bottom:18px;opacity:.8;">
-      Connectez-vous pour accéder à votre dashboard.
-    </p>
+  <nav class="nav">
+    <a class="nav-link" href="index.html">Accueil</a>
+    <a class="nav-link" href="test.html">Test gratuit</a>
+    <a class="nav-link" href="tarifs.html">Tarifs</a>
+    <a class="nav-link active" href="login.html" data-auth="out">Connexion</a>
+    <a class="nav-link" href="dashboard.html" data-auth="in">Dashboard</a>
+    <button class="btn-ghost" type="button" data-auth="in" data-logout>Déconnexion</button>
+  </nav>
+</header>
 
-    <form id="loginForm" style="display:grid;gap:12px;">
-      <div>
-        <label>Email</label>
-        <input id="email" type="email" required placeholder="email@example.com" />
-      </div>
+<main class="container">
+  <section class="hero compact">
+    <h1>Connectez-vous</h1>
+    <p class="lead">Accédez à votre tableau de bord et suivez votre budget.</p>
+  </section>
 
-      <div>
-        <label>Mot de passe</label>
-        <input id="password" type="password" required placeholder="••••••••" />
-      </div>
+  <div class="login-grid">
+    <!-- Connexion -->
+    <div class="card">
+      <h2>🔐 Connexion</h2>
+      <p>Vous avez déjà un compte ?</p>
+      
+      <form class="form" id="login-form">
+        <div class="field">
+          <label for="login-email">Email</label>
+          <input type="email" id="login-email" placeholder="votre@email.com" required>
+        </div>
+        <div class="field">
+          <label for="login-password">Mot de passe</label>
+          <input type="password" id="login-password" placeholder="••••••••" required>
+        </div>
+        <div id="login-error" style="color: #dc2626; font-size: 14px; display: none;"></div>
+        <button type="submit" class="btn btn-primary full">Se connecter</button>
+      </form>
+    </div>
 
-      <button type="submit" class="btn">Se connecter</button>
-      <p id="msg" style="font-size:14px;opacity:.75;"></p>
-    </form>
+    <!-- Inscription -->
+    <div class="card">
+      <h2>✨ Créer un compte</h2>
+      <p>Nouveau ? Inscrivez-vous gratuitement.</p>
+      
+      <form class="form" id="register-form">
+        <div class="field">
+          <label for="register-email">Email</label>
+          <input type="email" id="register-email" placeholder="votre@email.com" required>
+        </div>
+        <div class="field">
+          <label for="register-password">Mot de passe</label>
+          <input type="password" id="register-password" placeholder="Min. 6 caractères" minlength="6" required>
+        </div>
+        <div class="field">
+          <label for="register-password-confirm">Confirmer le mot de passe</label>
+          <input type="password" id="register-password-confirm" placeholder="••••••••" required>
+        </div>
+        <div id="register-error" style="color: #dc2626; font-size: 14px; display: none;"></div>
+        <div id="register-success" style="color: var(--accent); font-size: 14px; display: none;"></div>
+        <button type="submit" class="btn btn-primary full">Créer mon compte</button>
+      </form>
+    </div>
+  </div>
 
-    <hr style="margin:22px 0;opacity:.2;">
+  <div class="hint" style="max-width: 600px; margin: var(--space-xl) auto; text-align: center;">
+    <strong>🔒 Vos données sont sécurisées</strong><br>
+    Nous ne partageons jamais vos informations. Votre budget reste privé.
+  </div>
 
-    <p style="margin-bottom:10px;font-weight:600;">Pas encore de compte ?</p>
-    <a class="btn btn-ghost" href="/register.html">Créer un compte</a>
-  </main>
+  <footer class="footer">
+    <a href="tarifs.html">Tarifs</a> ·
+    <a href="index.html">Accueil</a> ·
+    <span class="muted">© <span id="year"></span> Où part mon argent</span>
+  </footer>
+</main>
 
-  <script src="/nav-auth.js"></script>
-  <script>
-    // Si déjà connecté -> dashboard
-    if (localStorage.getItem("auth") === "1") {
-      window.location.href = "/dashboard.html";
+<script src="assets/nav-auth.js"></script>
+<script>
+// ============================================
+// GESTION AUTHENTIFICATION
+// ============================================
+
+// Rediriger si déjà connecté
+(function() {
+  try {
+    const s = JSON.parse(localStorage.getItem("auth_session_v1"));
+    if (s && s.email) {
+      window.location.href = 'dashboard.html';
     }
+  } catch {}
+})();
 
-    document.getElementById("loginForm").addEventListener("submit", function(e){
-      e.preventDefault();
+// Récupérer les utilisateurs stockés
+function getUsers() {
+  try {
+    const users = localStorage.getItem('users');
+    return users ? JSON.parse(users) : [];
+  } catch { return []; }
+}
 
-      // MVP : on active l'état connecté (local)
-      if (window.authManager && typeof window.authManager.login === "function") {
-        window.authManager.login();
-      } else {
-        localStorage.setItem("auth","1");
-      }
+function saveUsers(users) {
+  localStorage.setItem('users', JSON.stringify(users));
+}
 
-      window.location.href = "/dashboard.html";
-    });
-  </script>
+// Hash simple du mot de passe (pour démo - en prod utiliser bcrypt côté serveur)
+function hashPassword(password) {
+  let hash = 0;
+  for (let i = 0; i < password.length; i++) {
+    const char = password.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+  return hash.toString(16);
+}
+
+// ============================================
+// CONNEXION
+// ============================================
+document.getElementById('login-form').addEventListener('submit', function(e) {
+  e.preventDefault();
+  
+  const email = document.getElementById('login-email').value.trim().toLowerCase();
+  const password = document.getElementById('login-password').value;
+  const errorEl = document.getElementById('login-error');
+  
+  errorEl.style.display = 'none';
+  
+  // Vérifier les identifiants
+  const users = getUsers();
+  const user = users.find(u => u.email === email);
+  
+  if (!user) {
+    errorEl.textContent = 'Aucun compte trouvé avec cet email.';
+    errorEl.style.display = 'block';
+    return;
+  }
+  
+  if (user.passwordHash !== hashPassword(password)) {
+    errorEl.textContent = 'Mot de passe incorrect.';
+    errorEl.style.display = 'block';
+    return;
+  }
+  
+  // Connexion réussie
+  const session = {
+    email: user.email,
+    createdAt: user.createdAt,
+    loginAt: new Date().toISOString()
+  };
+  
+  localStorage.setItem('auth_session_v1', JSON.stringify(session));
+  
+  // Rediriger vers dashboard
+  window.location.href = 'dashboard.html';
+});
+
+// ============================================
+// INSCRIPTION
+// ============================================
+document.getElementById('register-form').addEventListener('submit', function(e) {
+  e.preventDefault();
+  
+  const email = document.getElementById('register-email').value.trim().toLowerCase();
+  const password = document.getElementById('register-password').value;
+  const passwordConfirm = document.getElementById('register-password-confirm').value;
+  const errorEl = document.getElementById('register-error');
+  const successEl = document.getElementById('register-success');
+  
+  errorEl.style.display = 'none';
+  successEl.style.display = 'none';
+  
+  // Validation
+  if (password.length < 6) {
+    errorEl.textContent = 'Le mot de passe doit faire au moins 6 caractères.';
+    errorEl.style.display = 'block';
+    return;
+  }
+  
+  if (password !== passwordConfirm) {
+    errorEl.textContent = 'Les mots de passe ne correspondent pas.';
+    errorEl.style.display = 'block';
+    return;
+  }
+  
+  // Vérifier si l'email existe déjà
+  const users = getUsers();
+  if (users.find(u => u.email === email)) {
+    errorEl.textContent = 'Un compte existe déjà avec cet email.';
+    errorEl.style.display = 'block';
+    return;
+  }
+  
+  // Créer l'utilisateur
+  const newUser = {
+    email: email,
+    passwordHash: hashPassword(password),
+    createdAt: new Date().toISOString(),
+    plan: 'free'
+  };
+  
+  users.push(newUser);
+  saveUsers(users);
+  
+  // Connecter automatiquement
+  const session = {
+    email: newUser.email,
+    createdAt: newUser.createdAt,
+    loginAt: new Date().toISOString()
+  };
+  
+  localStorage.setItem('auth_session_v1', JSON.stringify(session));
+  localStorage.setItem('plan', JSON.stringify('free'));
+  
+  successEl.textContent = 'Compte créé ! Redirection...';
+  successEl.style.display = 'block';
+  
+  // Rediriger vers dashboard
+  setTimeout(() => {
+    window.location.href = 'dashboard.html';
+  }, 1000);
+});
+
+// Footer year
+document.getElementById('year').textContent = new Date().getFullYear();
+</script>
+
 </body>
 </html>
