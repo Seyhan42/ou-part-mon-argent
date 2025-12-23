@@ -1,102 +1,65 @@
-/* =========================
-   auth.js — Local auth MVP
-   ========================= */
+/**
+ * nav-auth.js
+ * Gestion de l'authentification et de la navigation
+ * À inclure sur toutes les pages du site
+ */
 
-const AUTH_KEY = "auth_session_v1";
-const USERS_KEY = "auth_users_v1"; // array [{email, passwordHash, createdAt}]
+(function() {
+    'use strict';
 
-function normalizeEmail(email) {
-  return String(email || "").trim().toLowerCase();
-}
+    // Vérifie si l'utilisateur est connecté
+    function isAuthenticated() {
+        return localStorage.getItem('auth') === '1';
+    }
 
-// Simple hash (NOT secure). For MVP only.
-async function sha256(text) {
-  const enc = new TextEncoder().encode(text);
-  const buf = await crypto.subtle.digest("SHA-256", enc);
-  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
-}
+    // Met à jour l'affichage de la navigation selon l'état de connexion
+    function updateNavigation() {
+        const authLinks = document.querySelectorAll('[data-auth]');
+        const isLoggedIn = isAuthenticated();
 
-function getUsers() {
-  try {
-    return JSON.parse(localStorage.getItem(USERS_KEY)) || [];
-  } catch {
-    return [];
-  }
-}
+        authLinks.forEach(link => {
+            const authType = link.getAttribute('data-auth');
+            
+            if (authType === 'logged-in') {
+                // Afficher uniquement si connecté
+                link.style.display = isLoggedIn ? '' : 'none';
+            } else if (authType === 'logged-out') {
+                // Afficher uniquement si déconnecté
+                link.style.display = isLoggedIn ? 'none' : '';
+            }
+        });
+    }
 
-function setUsers(users) {
-  localStorage.setItem(USERS_KEY, JSON.stringify(users));
-}
+    // Fonction de déconnexion
+    function logout() {
+        localStorage.removeItem('auth');
+        window.location.href = '/index.html';
+    }
 
-function setSession(email) {
-  localStorage.setItem(AUTH_KEY, JSON.stringify({
-    email,
-    loggedInAt: new Date().toISOString()
-  }));
-}
+    // Fonction de connexion (à appeler depuis la page login)
+    function login() {
+        localStorage.setItem('auth', '1');
+    }
 
-function getSession() {
-  try {
-    return JSON.parse(localStorage.getItem(AUTH_KEY));
-  } catch {
-    return null;
-  }
-}
+    // Exposer les fonctions globalement
+    window.authManager = {
+        isAuthenticated: isAuthenticated,
+        updateNavigation: updateNavigation,
+        logout: logout,
+        login: login
+    };
 
-function clearSession() {
-  localStorage.removeItem(AUTH_KEY);
-}
+    // Initialiser au chargement du DOM
+    document.addEventListener('DOMContentLoaded', function() {
+        updateNavigation();
 
-function isLoggedIn() {
-  const s = getSession();
-  return !!(s && s.email);
-}
-
-function requireAuth(redirectTo = "login.html") {
-  if (!isLoggedIn()) {
-    window.location.href = redirectTo;
-  }
-}
-
-async function registerUser(email, password) {
-  const e = normalizeEmail(email);
-  if (!e) return { ok: false, message: "Email invalide." };
-  if (!password || password.length < 6) return { ok: false, message: "Mot de passe trop court (min 6 caractères)." };
-
-  const users = getUsers();
-  const exists = users.some(u => u.email === e);
-  if (exists) return { ok: false, message: "Cet email existe déjà." };
-
-  const passwordHash = await sha256(password);
-  users.push({ email: e, passwordHash, createdAt: new Date().toISOString() });
-  setUsers(users);
-
-  setSession(e);
-  return { ok: true, message: "Compte créé." };
-}
-
-async function loginUser(email, password) {
-  const e = normalizeEmail(email);
-  if (!e) return { ok: false, message: "Email invalide." };
-  if (!password) return { ok: false, message: "Mot de passe requis." };
-
-  const users = getUsers();
-  const user = users.find(u => u.email === e);
-  if (!user) return { ok: false, message: "Aucun compte trouvé avec cet email." };
-
-  const passwordHash = await sha256(password);
-  if (passwordHash !== user.passwordHash) return { ok: false, message: "Mot de passe incorrect." };
-
-  setSession(e);
-  return { ok: true, message: "Connecté." };
-}
-
-function logout(redirectTo = "login.html") {
-  clearSession();
-  window.location.href = redirectTo;
-}
-
-function currentUserEmail() {
-  const s = getSession();
-  return s?.email || "";
-}
+        // Attacher l'événement de déconnexion aux boutons
+        const logoutButtons = document.querySelectorAll('[data-action="logout"]');
+        logoutButtons.forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                logout();
+            });
+        });
+    });
+})();
