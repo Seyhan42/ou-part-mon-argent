@@ -6,7 +6,7 @@
   <title>Dashboard – Où part mon argent ?</title>
   <link rel="stylesheet" href="css/style.css?v=2">
   
-  <!-- PROTECTION : Redirection si non connecté (exécuté AVANT le rendu) -->
+  <!-- PROTECTION : Redirection si non connecté -->
   <script>
     (function() {
       try {
@@ -21,36 +21,319 @@
       }
     })();
   </script>
+
   <style>
-    .main { max-width: 1100px; margin: 0 auto; padding: var(--space-xl); }
-    .page-header { text-align: center; margin-bottom: var(--space-xl); }
-    .page-title { font-size: var(--text-3xl); margin-bottom: var(--space-xs); }
-    .page-subtitle { color: var(--text-muted); }
-    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-md); }
-    .section { margin-top: var(--space-xl); }
-    .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-sm); }
-    .card-label { font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); font-weight: 600; }
-    .card-icon { width: 32px; height: 32px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-size: 16px; }
-    .card-icon.green { background: rgba(13,159,111,0.1); }
-    .card-icon.red { background: rgba(220,38,38,0.1); }
-    .card-icon.orange { background: rgba(245,158,11,0.1); }
-    .card-value { font-size: var(--text-2xl); font-weight: 700; color: var(--text-primary); }
-    .badge { font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: var(--radius-full); }
-    .badge.success { background: rgba(13,159,111,0.1); color: var(--accent); }
+    /* ===== LAYOUT DASHBOARD ===== */
+    .dashboard-layout {
+      display: flex;
+      min-height: calc(100vh - 70px);
+    }
+    
+    /* ===== SIDEBAR ===== */
+    .sidebar {
+      width: 260px;
+      background: var(--bg-card);
+      border-right: 1px solid var(--border-light);
+      padding: var(--space-lg);
+      flex-shrink: 0;
+    }
+    
+    .sidebar-section {
+      margin-bottom: var(--space-xl);
+    }
+    
+    .sidebar-title {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: var(--space-sm);
+      padding: 0 var(--space-sm);
+    }
+    
+    .sidebar-menu {
+      list-style: none;
+    }
+    
+    .sidebar-item {
+      margin-bottom: 2px;
+    }
+    
+    .sidebar-link {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      padding: 10px var(--space-sm);
+      border-radius: var(--radius-md);
+      color: var(--text-secondary);
+      font-size: var(--text-sm);
+      font-weight: 500;
+      text-decoration: none;
+      transition: all var(--transition-base);
+      cursor: pointer;
+    }
+    
+    .sidebar-link:hover {
+      background: var(--bg-subtle);
+      color: var(--text-primary);
+    }
+    
+    .sidebar-link.active {
+      background: var(--accent-subtle);
+      color: var(--accent);
+      font-weight: 600;
+    }
+    
+    .sidebar-link.locked {
+      color: var(--text-muted);
+      cursor: not-allowed;
+    }
+    
+    .sidebar-link.locked:hover {
+      background: transparent;
+    }
+    
+    .sidebar-icon {
+      font-size: 18px;
+      width: 24px;
+      text-align: center;
+    }
+    
+    .sidebar-badge {
+      margin-left: auto;
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: var(--radius-full);
+      background: var(--bg-subtle);
+      color: var(--text-muted);
+    }
+    
+    .sidebar-badge.premium {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: white;
+    }
+    
+    /* Plan actuel dans sidebar */
+    .plan-card {
+      background: var(--accent-subtle);
+      border: 1px solid var(--accent-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-md);
+      text-align: center;
+    }
+    
+    .plan-card-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+    
+    .plan-card-name {
+      font-size: var(--text-lg);
+      font-weight: 700;
+      color: var(--accent);
+      margin: 4px 0;
+    }
+    
+    .plan-card-btn {
+      margin-top: var(--space-sm);
+    }
+    
+    /* ===== MAIN CONTENT ===== */
+    .dashboard-main {
+      flex: 1;
+      padding: var(--space-xl);
+      max-width: 1000px;
+      overflow-y: auto;
+    }
+    
+    .page-header {
+      margin-bottom: var(--space-xl);
+    }
+    
+    .page-title {
+      font-size: var(--text-2xl);
+      margin-bottom: var(--space-xs);
+    }
+    
+    .page-subtitle {
+      color: var(--text-muted);
+      font-size: var(--text-sm);
+    }
+    
+    /* ===== SECTIONS ===== */
+    .section {
+      display: none;
+    }
+    
+    .section.active {
+      display: block;
+    }
+    
+    /* ===== GRIDS ===== */
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--space-md);
+    }
+    
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-lg);
+      margin-top: var(--space-lg);
+    }
+    
+    /* ===== CARDS STATS ===== */
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-lg);
+      padding: var(--space-lg);
+    }
+    
+    .stat-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--space-sm);
+    }
+    
+    .stat-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      color: var(--text-muted);
+    }
+    
+    .stat-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+    
+    .stat-icon.green { background: rgba(13,159,111,0.1); }
+    .stat-icon.red { background: rgba(220,38,38,0.1); }
+    .stat-icon.orange { background: rgba(245,158,11,0.1); }
+    .stat-icon.blue { background: rgba(59,130,246,0.1); }
+    
+    .stat-value {
+      font-size: var(--text-2xl);
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    
+    /* ===== BADGES ===== */
+    .badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: var(--radius-full);
+    }
+    
+    .badge.success { background: rgba(13,159,111,0.1); color: #0d9f6f; }
     .badge.warning { background: rgba(245,158,11,0.1); color: #d97706; }
     .badge.danger { background: rgba(220,38,38,0.1); color: #dc2626; }
     .badge.locked { background: var(--bg-subtle); color: var(--text-muted); }
-    .plan-banner { background: var(--accent-subtle); border: 1px solid var(--accent-border); border-radius: var(--radius-lg); padding: var(--space-md) var(--space-lg); display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-xl); }
-    .plan-info { display: flex; align-items: center; gap: var(--space-md); }
-    .plan-label { font-size: var(--text-sm); color: var(--text-secondary); }
-    .plan-name { font-weight: 700; color: var(--accent); font-size: var(--text-lg); }
-    .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; }
-    .modal-content { background: white; border-radius: var(--radius-xl); max-width: 400px; width: 90%; padding: var(--space-xl); }
-    @media (max-width: 1024px) { .grid-4 { grid-template-columns: repeat(2, 1fr); } }
-    @media (max-width: 600px) { .grid-4 { grid-template-columns: 1fr; } .plan-banner { flex-direction: column; gap: var(--space-md); text-align: center; } }
+    
+    /* ===== LOCKED OVERLAY ===== */
+    .locked-overlay {
+      text-align: center;
+      padding: var(--space-2xl);
+      background: var(--bg-subtle);
+      border-radius: var(--radius-lg);
+      border: 2px dashed var(--border-medium);
+    }
+    
+    .locked-icon {
+      font-size: 48px;
+      margin-bottom: var(--space-md);
+    }
+    
+    .locked-title {
+      font-size: var(--text-lg);
+      font-weight: 600;
+      margin-bottom: var(--space-sm);
+    }
+    
+    .locked-desc {
+      color: var(--text-muted);
+      font-size: var(--text-sm);
+      margin-bottom: var(--space-lg);
+    }
+    
+    /* ===== MODAL ===== */
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .modal.open {
+      display: flex;
+    }
+    
+    .modal-content {
+      background: white;
+      border-radius: var(--radius-xl);
+      max-width: 500px;
+      width: 90%;
+      max-height: 90vh;
+      overflow: auto;
+      padding: var(--space-xl);
+    }
+    
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--space-lg);
+    }
+    
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: var(--text-muted);
+    }
+    
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 1024px) {
+      .grid-4 { grid-template-columns: repeat(2, 1fr); }
+    }
+    
+    @media (max-width: 768px) {
+      .dashboard-layout { flex-direction: column; }
+      .sidebar { 
+        width: 100%; 
+        border-right: none; 
+        border-bottom: 1px solid var(--border-light);
+        padding: var(--space-md);
+      }
+      .sidebar-menu { display: flex; flex-wrap: wrap; gap: var(--space-xs); }
+      .sidebar-item { margin: 0; }
+      .sidebar-section { margin-bottom: var(--space-md); }
+      .sidebar-title { display: none; }
+      .grid-4 { grid-template-columns: 1fr; }
+      .grid-2 { grid-template-columns: 1fr; }
+      .dashboard-main { padding: var(--space-lg); }
+    }
   </style>
 </head>
 <body>
+
+<!-- ===== HEADER ===== -->
 <header class="header">
   <div class="brand">
     <div class="logo">€</div>
@@ -59,6 +342,7 @@
       <div class="brand-subtitle">Dashboard</div>
     </div>
   </div>
+
   <nav class="nav">
     <a class="nav-link" href="index.html">Accueil</a>
     <a class="nav-link" href="test.html">Test gratuit</a>
@@ -69,201 +353,904 @@
   </nav>
 </header>
 
-<main class="main">
-  <div class="plan-banner">
-    <div class="plan-info">
-      <span class="plan-label">Votre plan :</span>
-      <span class="plan-name" id="user-plan">Gratuit</span>
+<!-- ===== DASHBOARD LAYOUT ===== -->
+<div class="dashboard-layout">
+  
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="sidebar">
+    
+    <!-- Plan actuel -->
+    <div class="plan-card">
+      <div class="plan-card-label">Votre plan</div>
+      <div class="plan-card-name" id="sidebar-plan">Gratuit</div>
+      <a href="tarifs.html" class="btn btn-primary plan-card-btn" style="font-size: 12px; padding: 8px 16px;">Changer d'offre</a>
     </div>
-    <a href="tarifs.html" class="btn btn-primary">Voir les offres</a>
-  </div>
-
-  <div class="page-header">
-    <h1 class="page-title">Tableau de bord</h1>
-    <p class="page-subtitle">Bienvenue ! Voici le résumé de votre situation financière.</p>
-  </div>
-
-  <!-- A) Résumé Financier -->
-  <div class="grid-4">
-    <div class="card">
-      <div class="card-header"><span class="card-label">Revenus</span><div class="card-icon green">💵</div></div>
-      <div class="card-value" id="revenus">—</div>
+    
+    <!-- Menu principal -->
+    <div class="sidebar-section" style="margin-top: var(--space-xl);">
+      <div class="sidebar-title">Menu</div>
+      <ul class="sidebar-menu">
+        <li class="sidebar-item">
+          <a class="sidebar-link active" data-section="resume" onclick="showSection('resume')">
+            <span class="sidebar-icon">📊</span>
+            Résumé
+          </a>
+        </li>
+        <li class="sidebar-item">
+          <a class="sidebar-link" data-section="historique" onclick="showSection('historique')">
+            <span class="sidebar-icon">📋</span>
+            Historique
+          </a>
+        </li>
+      </ul>
     </div>
-    <div class="card">
-      <div class="card-header"><span class="card-label">Dépenses essentielles</span><div class="card-icon red">🏠</div></div>
-      <div class="card-value" id="depenses-essentielles">—</div>
+    
+    <!-- Fonctionnalités Premium -->
+    <div class="sidebar-section">
+      <div class="sidebar-title">Premium</div>
+      <ul class="sidebar-menu">
+        <li class="sidebar-item">
+          <a class="sidebar-link" id="menu-epargne" data-section="epargne" onclick="showSection('epargne')">
+            <span class="sidebar-icon">💎</span>
+            Objectif épargne
+            <span class="sidebar-badge premium" id="badge-epargne">PRO</span>
+          </a>
+        </li>
+        <li class="sidebar-item">
+          <a class="sidebar-link" id="menu-fuites" data-section="fuites" onclick="showSection('fuites')">
+            <span class="sidebar-icon">💸</span>
+            Fuites & Abonnements
+            <span class="sidebar-badge premium" id="badge-fuites">PRO</span>
+          </a>
+        </li>
+        <li class="sidebar-item">
+          <a class="sidebar-link" id="menu-rappels" data-section="rappels" onclick="showSection('rappels')">
+            <span class="sidebar-icon">📧</span>
+            Rappels email
+            <span class="sidebar-badge premium" id="badge-rappels">PRO</span>
+          </a>
+        </li>
+        <li class="sidebar-item">
+          <a class="sidebar-link" id="menu-decisions" data-section="decisions" onclick="showSection('decisions')">
+            <span class="sidebar-icon">⚖️</span>
+            Comparateur décisions
+            <span class="sidebar-badge premium" id="badge-decisions">COMPLET</span>
+          </a>
+        </li>
+        <li class="sidebar-item">
+          <a class="sidebar-link" id="menu-imprevu" data-section="imprevu" onclick="showSection('imprevu')">
+            <span class="sidebar-icon">🚨</span>
+            Simulateur imprévu
+            <span class="sidebar-badge premium" id="badge-imprevu">COMPLET</span>
+          </a>
+        </li>
+      </ul>
     </div>
-    <div class="card">
-      <div class="card-header"><span class="card-label">Dépenses non essentielles</span><div class="card-icon orange">🛍️</div></div>
-      <div class="card-value" id="depenses-non-essentielles">—</div>
-    </div>
-    <div class="card">
-      <div class="card-header"><span class="card-label">Reste à vivre</span><div class="card-icon green">✨</div></div>
-      <div class="card-value" id="reste-a-vivre">—</div>
-    </div>
-  </div>
-
-  <div class="card callout mt-lg" id="no-test-message" style="display: none; text-align: center;">
-    <h2>Pas encore de test</h2>
-    <p>Faites votre premier test pour voir votre résumé financier.</p>
-    <div class="cta-row" style="margin-top: var(--space-md);"><a href="test.html" class="btn btn-primary">Faire un test</a></div>
-  </div>
-
-  <!-- B) Dernier Test + C) Épargne -->
-  <div class="section">
-    <div class="grid-2">
-      <div class="card">
-        <div class="card-header"><h3>🎯 Dernier test financier</h3><span class="badge success" id="test-badge">—</span></div>
-        <div style="margin: var(--space-lg) 0; display: flex; align-items: center; gap: var(--space-lg);">
-          <div style="position: relative; width: 80px; height: 80px;">
-            <svg width="80" height="80" viewBox="0 0 80 80">
-              <circle cx="40" cy="40" r="35" fill="none" stroke="var(--border-light)" stroke-width="6"/>
-              <circle id="score-circle" cx="40" cy="40" r="35" fill="none" stroke="var(--accent)" stroke-width="6" stroke-dasharray="220" stroke-dashoffset="220" stroke-linecap="round" transform="rotate(-90 40 40)" style="transition: stroke-dashoffset 1s ease;"/>
-            </svg>
-            <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;">
-              <span style="font-size: var(--text-xl); font-weight: 700;" id="score-value">—</span>
-            </div>
+    
+  </aside>
+  
+  <!-- ===== MAIN CONTENT ===== -->
+  <main class="dashboard-main">
+    
+    <!-- ===== SECTION: RÉSUMÉ ===== -->
+    <section class="section active" id="section-resume">
+      <div class="page-header">
+        <h1 class="page-title">📊 Résumé financier</h1>
+        <p class="page-subtitle">Vue d'ensemble de votre situation financière</p>
+      </div>
+      
+      <!-- Message si pas de test -->
+      <div class="card callout" id="no-test-message" style="display: none; text-align: center; margin-bottom: var(--space-xl);">
+        <h2>👋 Bienvenue !</h2>
+        <p>Faites votre premier test pour voir votre résumé financier.</p>
+        <a href="test.html" class="btn btn-primary" style="margin-top: var(--space-md);">Faire le test gratuit</a>
+      </div>
+      
+      <!-- 4 cartes stats -->
+      <div class="grid-4" id="stats-grid">
+        <div class="stat-card">
+          <div class="stat-header">
+            <span class="stat-label">Revenus</span>
+            <div class="stat-icon green">💵</div>
           </div>
-          <div>
-            <h4 id="test-title" style="margin-bottom: 4px;">—</h4>
-            <p id="test-description" style="font-size: var(--text-sm);">—</p>
-            <span style="font-size: var(--text-xs); color: var(--text-muted);" id="test-date">Dernier test : —</span>
-          </div>
+          <div class="stat-value" id="stat-revenus">—</div>
         </div>
-        <div class="cta-row" style="justify-content: flex-start;">
-          <a href="test.html" class="btn btn-primary">🔄 Refaire un test</a>
-          <button class="btn btn-secondary" onclick="openHistorique()">📊 Historique</button>
+        <div class="stat-card">
+          <div class="stat-header">
+            <span class="stat-label">Dépenses essentielles</span>
+            <div class="stat-icon red">🏠</div>
+          </div>
+          <div class="stat-value" id="stat-dep-ess">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-header">
+            <span class="stat-label">Dépenses non essentielles</span>
+            <div class="stat-icon orange">🛍️</div>
+          </div>
+          <div class="stat-value" id="stat-dep-non-ess">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-header">
+            <span class="stat-label">Reste à vivre</span>
+            <div class="stat-icon green">✨</div>
+          </div>
+          <div class="stat-value" id="stat-reste">—</div>
         </div>
       </div>
-
-      <div class="card">
-        <div class="card-header"><h3>💎 Objectif d'épargne</h3><span class="badge" id="savings-badge">—</span></div>
-        <div id="epargne-content">
-          <div style="text-align: center; margin: var(--space-md) 0;">
-            <span style="font-size: var(--text-xs); color: var(--text-muted); text-transform: uppercase;">Objectif total</span>
-            <div style="font-size: var(--text-2xl); font-weight: 700;" id="objectif-montant">0 €</div>
+      
+      <!-- Dernier test -->
+      <div class="grid-2">
+        <div class="card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-md);">
+            <h3>🎯 Dernier test</h3>
+            <span class="badge" id="test-badge">—</span>
           </div>
-          <div style="margin: var(--space-md) 0;">
-            <div style="display: flex; justify-content: space-between; font-size: var(--text-sm); margin-bottom: 6px;">
-              <span>Progression</span><span id="progress-percent">0%</span>
+          
+          <div style="display: flex; align-items: center; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+            <div style="position: relative; width: 80px; height: 80px; flex-shrink: 0;">
+              <svg width="80" height="80" viewBox="0 0 80 80">
+                <circle cx="40" cy="40" r="35" fill="none" stroke="var(--border-light)" stroke-width="6"/>
+                <circle id="score-circle" cx="40" cy="40" r="35" fill="none" stroke="var(--accent)" stroke-width="6" 
+                  stroke-dasharray="220" stroke-dashoffset="220" stroke-linecap="round" 
+                  transform="rotate(-90 40 40)" style="transition: stroke-dashoffset 1s ease;"/>
+              </svg>
+              <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;">
+                <span style="font-size: var(--text-xl); font-weight: 700;" id="score-value">—</span>
+              </div>
             </div>
-            <div style="height: 8px; background: var(--bg-subtle); border-radius: var(--radius-full); overflow: hidden;">
-              <div id="progress-fill" style="height: 100%; background: var(--accent); width: 0%; transition: width 1s ease;"></div>
+            <div>
+              <h4 id="test-title" style="margin-bottom: 4px;">—</h4>
+              <p style="font-size: var(--text-sm); color: var(--text-muted);" id="test-conseil">—</p>
+              <span style="font-size: var(--text-xs); color: var(--text-muted);" id="test-date">—</span>
             </div>
           </div>
-          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-sm); text-align: center; margin: var(--space-lg) 0;">
-            <div><div style="font-size: var(--text-lg); font-weight: 700; color: var(--accent);" id="epargne-actuelle">0 €</div><div style="font-size: var(--text-xs); color: var(--text-muted);">Épargné</div></div>
-            <div><div style="font-size: var(--text-lg); font-weight: 700; color: #d97706;" id="epargne-restante">0 €</div><div style="font-size: var(--text-xs); color: var(--text-muted);">Restant</div></div>
-            <div><div style="font-size: var(--text-lg); font-weight: 700;" id="epargne-mensuelle">0 €</div><div style="font-size: var(--text-xs); color: var(--text-muted);">Conseillé/mois</div></div>
-          </div>
+          
           <div class="cta-row" style="justify-content: flex-start;">
-            <button class="btn btn-primary" onclick="ajouterVersement()">➕ Versement</button>
-            <button class="btn btn-secondary" onclick="modifierObjectif()">⚙️ Modifier</button>
+            <a href="test.html" class="btn btn-primary">🔄 Refaire un test</a>
           </div>
         </div>
-        <div id="epargne-locked" style="display: none; text-align: center; padding: var(--space-lg);">
-          <div style="font-size: 48px;">🔒</div>
-          <h4>Fonctionnalité Premium</h4>
-          <p style="font-size: var(--text-sm);">Disponible avec le plan Essentiel ou Complet.</p>
-          <a href="tarifs.html" class="btn btn-primary" style="margin-top: var(--space-md);">Voir les offres</a>
+        
+        <!-- Accès rapide -->
+        <div class="card">
+          <h3 style="margin-bottom: var(--space-lg);">⚡ Accès rapide</h3>
+          <div style="display: flex; flex-direction: column; gap: var(--space-sm);">
+            <a onclick="showSection('historique')" class="sidebar-link" style="border: 1px solid var(--border-light); border-radius: var(--radius-md);">
+              <span class="sidebar-icon">📋</span>
+              Voir l'historique complet
+            </a>
+            <a onclick="showSection('epargne')" class="sidebar-link" style="border: 1px solid var(--border-light); border-radius: var(--radius-md);">
+              <span class="sidebar-icon">💎</span>
+              Définir un objectif d'épargne
+            </a>
+            <a onclick="showSection('fuites')" class="sidebar-link" style="border: 1px solid var(--border-light); border-radius: var(--radius-md);">
+              <span class="sidebar-icon">💸</span>
+              Identifier mes fuites
+            </a>
+          </div>
         </div>
       </div>
-    </div>
-  </div>
-
-  <!-- E) Fuites -->
-  <div class="section">
-    <div class="card">
-      <div class="card-header"><h3>💸 Fuites : abonnements & jeux</h3><span class="badge" id="fuites-badge">—</span></div>
-      <div id="fuites-content">
-        <p style="font-size: var(--text-sm); color: var(--text-muted); margin-bottom: var(--space-md);">Identifiez vos dépenses invisibles.</p>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg);">
-          <div>
-            <h4 style="font-size: var(--text-sm); margin-bottom: var(--space-sm);">📺 Abonnements</h4>
-            <ul class="list" id="subscriptions-list"><li>Aucun abonnement</li></ul>
-            <button class="btn btn-secondary" style="margin-top: var(--space-sm);" onclick="ajouterAbonnement()">+ Ajouter</button>
+    </section>
+    
+    <!-- ===== SECTION: HISTORIQUE ===== -->
+    <section class="section" id="section-historique">
+      <div class="page-header">
+        <h1 class="page-title">📋 Historique des tests</h1>
+        <p class="page-subtitle">Suivez l'évolution de votre budget dans le temps</p>
+      </div>
+      
+      <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-lg);">
+          <span class="badge" id="historique-count">0 tests</span>
+          <a href="test.html" class="btn btn-primary">+ Nouveau test</a>
+        </div>
+        
+        <div style="overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse; font-size: var(--text-sm);">
+            <thead>
+              <tr style="border-bottom: 2px solid var(--border-light);">
+                <th style="text-align: left; padding: var(--space-sm); color: var(--text-muted); font-weight: 600;">Date</th>
+                <th style="text-align: right; padding: var(--space-sm); color: var(--text-muted); font-weight: 600;">Revenus</th>
+                <th style="text-align: right; padding: var(--space-sm); color: var(--text-muted); font-weight: 600;">Dépenses</th>
+                <th style="text-align: right; padding: var(--space-sm); color: var(--text-muted); font-weight: 600;">Reste à vivre</th>
+                <th style="text-align: center; padding: var(--space-sm); color: var(--text-muted); font-weight: 600;">Score</th>
+                <th style="padding: var(--space-sm);"></th>
+              </tr>
+            </thead>
+            <tbody id="historique-table">
+              <tr><td colspan="6" style="text-align: center; padding: var(--space-xl); color: var(--text-muted);">Aucun test enregistré</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+    
+    <!-- ===== SECTION: ÉPARGNE ===== -->
+    <section class="section" id="section-epargne">
+      <div class="page-header">
+        <h1 class="page-title">💎 Objectif d'épargne</h1>
+        <p class="page-subtitle">Définissez et suivez vos objectifs d'épargne</p>
+      </div>
+      
+      <!-- Contenu si premium -->
+      <div id="epargne-content">
+        <div class="card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-lg);">
+            <h3>Mon objectif</h3>
+            <span class="badge warning" id="epargne-badge">En cours</span>
           </div>
-          <div>
-            <h4 style="font-size: var(--text-sm); margin-bottom: var(--space-sm);">🎰 Jeux d'argent</h4>
-            <div style="background: var(--bg-subtle); padding: var(--space-md); border-radius: var(--radius-md);">
-              <div style="font-size: var(--text-2xl); font-weight: 700;" id="gambling-amount">0 €</div>
-              <div style="font-size: var(--text-xs); color: var(--text-muted);">par mois</div>
+          
+          <div style="text-align: center; margin-bottom: var(--space-lg);">
+            <div style="font-size: 12px; color: var(--text-muted); text-transform: uppercase;">Objectif total</div>
+            <div style="font-size: var(--text-3xl); font-weight: 800;" id="objectif-montant">0 €</div>
+          </div>
+          
+          <div style="margin-bottom: var(--space-lg);">
+            <div style="display: flex; justify-content: space-between; font-size: var(--text-sm); margin-bottom: 6px;">
+              <span>Progression</span>
+              <span id="progress-percent">0%</span>
             </div>
-            <button class="btn btn-secondary" style="margin-top: var(--space-sm);" onclick="modifierJeux()">Modifier</button>
+            <div style="height: 12px; background: var(--bg-subtle); border-radius: var(--radius-full); overflow: hidden;">
+              <div id="progress-fill" style="height: 100%; background: linear-gradient(90deg, var(--accent), #10b981); width: 0%; transition: width 1s ease; border-radius: var(--radius-full);"></div>
+            </div>
+          </div>
+          
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-md); text-align: center; margin-bottom: var(--space-lg);">
+            <div style="background: var(--bg-subtle); padding: var(--space-md); border-radius: var(--radius-md);">
+              <div style="font-size: var(--text-xl); font-weight: 700; color: var(--accent);" id="epargne-actuelle">0 €</div>
+              <div style="font-size: 11px; color: var(--text-muted);">Épargné</div>
+            </div>
+            <div style="background: var(--bg-subtle); padding: var(--space-md); border-radius: var(--radius-md);">
+              <div style="font-size: var(--text-xl); font-weight: 700; color: #d97706;" id="epargne-restante">0 €</div>
+              <div style="font-size: 11px; color: var(--text-muted);">Restant</div>
+            </div>
+            <div style="background: var(--bg-subtle); padding: var(--space-md); border-radius: var(--radius-md);">
+              <div style="font-size: var(--text-xl); font-weight: 700;" id="epargne-mensuelle">0 €</div>
+              <div style="font-size: 11px; color: var(--text-muted);">Conseillé/mois</div>
+            </div>
+          </div>
+          
+          <div class="cta-row" style="justify-content: flex-start;">
+            <button class="btn btn-primary" onclick="openModal('modal-versement')">➕ Ajouter versement</button>
+            <button class="btn btn-secondary" onclick="openModal('modal-objectif')">⚙️ Modifier objectif</button>
           </div>
         </div>
-        <div style="margin-top: var(--space-lg); padding: var(--space-md); background: rgba(220,38,38,0.05); border-radius: var(--radius-md); border: 1px solid rgba(220,38,38,0.2); display: flex; justify-content: space-between; align-items: center;">
-          <span style="font-weight: 600; color: #dc2626;">💰 Total fuites</span>
-          <span style="font-size: var(--text-xl); font-weight: 700; color: #dc2626;" id="total-fuites">0 €</span>
+      </div>
+      
+      <!-- Bloqué si pas premium -->
+      <div id="epargne-locked" class="locked-overlay" style="display: none;">
+        <div class="locked-icon">🔒</div>
+        <div class="locked-title">Fonctionnalité Essentiel</div>
+        <div class="locked-desc">Définissez vos objectifs d'épargne et suivez votre progression avec le plan Essentiel ou Complet.</div>
+        <a href="tarifs.html" class="btn btn-primary">Voir les offres</a>
+      </div>
+    </section>
+    
+    <!-- ===== SECTION: FUITES ===== -->
+    <section class="section" id="section-fuites">
+      <div class="page-header">
+        <h1 class="page-title">💸 Fuites & Abonnements</h1>
+        <p class="page-subtitle">Identifiez vos dépenses invisibles qui grignotent votre budget</p>
+      </div>
+      
+      <div id="fuites-content">
+        <div class="grid-2">
+          <!-- Abonnements -->
+          <div class="card">
+            <h3 style="margin-bottom: var(--space-md);">📺 Mes abonnements</h3>
+            <ul class="list" id="subscriptions-list">
+              <li>Aucun abonnement enregistré</li>
+            </ul>
+            <button class="btn btn-secondary" style="margin-top: var(--space-md);" onclick="openModal('modal-abonnement')">+ Ajouter un abonnement</button>
+          </div>
+          
+          <!-- Jeux d'argent -->
+          <div class="card">
+            <h3 style="margin-bottom: var(--space-md);">🎰 Jeux d'argent / Casino</h3>
+            <div style="background: var(--bg-subtle); padding: var(--space-lg); border-radius: var(--radius-md); text-align: center;">
+              <div style="font-size: var(--text-3xl); font-weight: 700;" id="gambling-amount">0 €</div>
+              <div style="font-size: var(--text-sm); color: var(--text-muted);">par mois</div>
+            </div>
+            <button class="btn btn-secondary" style="margin-top: var(--space-md); width: 100%;" onclick="openModal('modal-jeux')">Modifier le montant</button>
+          </div>
+        </div>
+        
+        <!-- Total -->
+        <div class="card" style="margin-top: var(--space-lg); background: rgba(220,38,38,0.05); border-color: rgba(220,38,38,0.2);">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div style="font-weight: 600; color: #dc2626;">💰 Total des fuites mensuelles</div>
+              <div style="font-size: var(--text-sm); color: var(--text-muted);">Argent qui "disparaît" chaque mois</div>
+            </div>
+            <div style="font-size: var(--text-2xl); font-weight: 700; color: #dc2626;" id="total-fuites">0 €</div>
+          </div>
         </div>
       </div>
-      <div id="fuites-locked" style="display: none; text-align: center; padding: var(--space-lg);">
-        <div style="font-size: 48px;">🔒</div>
-        <h4>Fonctionnalité Premium</h4>
-        <a href="tarifs.html" class="btn btn-primary" style="margin-top: var(--space-md);">Voir les offres</a>
+      
+      <div id="fuites-locked" class="locked-overlay" style="display: none;">
+        <div class="locked-icon">🔒</div>
+        <div class="locked-title">Fonctionnalité Essentiel</div>
+        <div class="locked-desc">Identifiez et suivez vos fuites budgétaires avec le plan Essentiel ou Complet.</div>
+        <a href="tarifs.html" class="btn btn-primary">Voir les offres</a>
       </div>
-    </div>
-  </div>
-
-  <!-- F) Rappels -->
-  <div class="section">
-    <div class="card">
-      <div class="card-header"><h3>📧 Rappels email</h3><span class="badge" id="rappels-badge">—</span></div>
+    </section>
+    
+    <!-- ===== SECTION: RAPPELS ===== -->
+    <section class="section" id="section-rappels">
+      <div class="page-header">
+        <h1 class="page-title">📧 Rappels email</h1>
+        <p class="page-subtitle">Recevez des rappels pour suivre votre budget</p>
+      </div>
+      
       <div id="rappels-content">
-        <div style="display: flex; align-items: center; gap: var(--space-lg); flex-wrap: wrap;">
-          <label style="display: flex; align-items: center; gap: var(--space-sm); cursor: pointer;">
-            <input type="checkbox" id="rappel-toggle" style="width: 18px; height: 18px;">
-            <span>Rappel hebdomadaire</span>
-          </label>
-          <div class="field" style="flex: 1; min-width: 200px;">
-            <label for="rappel-email">Email</label>
+        <div class="card">
+          <div style="display: flex; align-items: center; gap: var(--space-lg); flex-wrap: wrap;">
+            <label style="display: flex; align-items: center; gap: var(--space-sm); cursor: pointer;">
+              <input type="checkbox" id="rappel-toggle" style="width: 20px; height: 20px;">
+              <span style="font-weight: 500;">Activer le rappel hebdomadaire</span>
+            </label>
+          </div>
+          
+          <div class="field" style="margin-top: var(--space-lg);">
+            <label for="rappel-email">Adresse email</label>
             <input type="email" id="rappel-email" placeholder="votre@email.com">
           </div>
-          <button class="btn btn-primary" onclick="saveRappel()">Enregistrer</button>
+          
+          <button class="btn btn-primary" style="margin-top: var(--space-lg);" onclick="saveRappel()">Enregistrer</button>
+          
+          <div class="hint" style="margin-top: var(--space-lg);">
+            ℹ️ Cette fonctionnalité sera bientôt disponible. Enregistrez votre email pour être notifié !
+          </div>
         </div>
-        <div class="hint" style="margin-top: var(--space-md);">ℹ️ Fonctionnalité bientôt disponible.</div>
       </div>
-      <div id="rappels-locked" style="display: none; text-align: center; padding: var(--space-lg);">
-        <div style="font-size: 48px;">🔒</div>
-        <h4>Fonctionnalité Premium</h4>
-        <a href="tarifs.html" class="btn btn-primary" style="margin-top: var(--space-md);">Voir les offres</a>
+      
+      <div id="rappels-locked" class="locked-overlay" style="display: none;">
+        <div class="locked-icon">🔒</div>
+        <div class="locked-title">Fonctionnalité Essentiel</div>
+        <div class="locked-desc">Recevez des rappels hebdomadaires avec le plan Essentiel ou Complet.</div>
+        <a href="tarifs.html" class="btn btn-primary">Voir les offres</a>
       </div>
+    </section>
+    
+    <!-- ===== SECTION: DÉCISIONS ===== -->
+    <section class="section" id="section-decisions">
+      <div class="page-header">
+        <h1 class="page-title">⚖️ Comparateur de décisions</h1>
+        <p class="page-subtitle">Comparez deux choix pour prendre la meilleure décision financière</p>
+      </div>
+      
+      <div id="decisions-content" style="display: none;">
+        <!-- Contenu à venir -->
+        <div class="card">
+          <p>Fonctionnalité en cours de développement...</p>
+        </div>
+      </div>
+      
+      <div id="decisions-locked" class="locked-overlay">
+        <div class="locked-icon">🔒</div>
+        <div class="locked-title">Fonctionnalité Complet</div>
+        <div class="locked-desc">Comparez vos décisions financières avec le plan Complet à 8,99€/mois.</div>
+        <a href="tarifs.html" class="btn btn-primary">Voir les offres</a>
+      </div>
+    </section>
+    
+    <!-- ===== SECTION: IMPRÉVU ===== -->
+    <section class="section" id="section-imprevu">
+      <div class="page-header">
+        <h1 class="page-title">🚨 Simulateur d'imprévu</h1>
+        <p class="page-subtitle">Testez si votre budget résiste à un imprévu</p>
+      </div>
+      
+      <div id="imprevu-content" style="display: none;">
+        <!-- Contenu à venir -->
+        <div class="card">
+          <p>Fonctionnalité en cours de développement...</p>
+        </div>
+      </div>
+      
+      <div id="imprevu-locked" class="locked-overlay">
+        <div class="locked-icon">🔒</div>
+        <div class="locked-title">Fonctionnalité Complet</div>
+        <div class="locked-desc">Simulez des imprévus illimités avec le plan Complet à 8,99€/mois.</div>
+        <a href="tarifs.html" class="btn btn-primary">Voir les offres</a>
+      </div>
+    </section>
+    
+  </main>
+</div>
+
+<!-- ===== MODALS ===== -->
+
+<!-- Modal Versement -->
+<div class="modal" id="modal-versement">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>➕ Ajouter un versement</h2>
+      <button class="modal-close" onclick="closeModal('modal-versement')">&times;</button>
+    </div>
+    <div class="field">
+      <label>Montant (€)</label>
+      <input type="number" id="versement-montant" placeholder="100" min="0">
+    </div>
+    <div class="cta-row" style="margin-top: var(--space-lg);">
+      <button class="btn btn-primary" onclick="saveVersement()">Ajouter</button>
+      <button class="btn btn-secondary" onclick="closeModal('modal-versement')">Annuler</button>
     </div>
   </div>
+</div>
 
-  <!-- D) Historique -->
-  <div class="section">
-    <div class="card">
-      <div class="card-header"><h3>📋 Historique des tests</h3><span class="badge" id="historique-count">0 tests</span></div>
-      <div style="overflow-x: auto;">
-        <table style="width: 100%; border-collapse: collapse; font-size: var(--text-sm);">
-          <thead>
-            <tr style="border-bottom: 2px solid var(--border-light);">
-              <th style="text-align: left; padding: var(--space-sm); color: var(--text-muted);">Date</th>
-              <th style="text-align: right; padding: var(--space-sm); color: var(--text-muted);">Revenus</th>
-              <th style="text-align: right; padding: var(--space-sm); color: var(--text-muted);">Dépenses</th>
-              <th style="text-align: right; padding: var(--space-sm); color: var(--text-muted);">Reste</th>
-              <th style="text-align: center; padding: var(--space-sm); color: var(--text-muted);">Score</th>
-              <th style="padding: var(--space-sm);"></th>
-            </tr>
-          </thead>
-          <tbody id="historique-table"><tr><td colspan="6" style="text-align: center; padding: var(--space-lg); color: var(--text-muted);">Aucun test</td></tr></tbody>
-        </table>
-      </div>
+<!-- Modal Objectif -->
+<div class="modal" id="modal-objectif">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>⚙️ Modifier l'objectif</h2>
+      <button class="modal-close" onclick="closeModal('modal-objectif')">&times;</button>
+    </div>
+    <div class="field" style="margin-bottom: var(--space-md);">
+      <label>Objectif total (€)</label>
+      <input type="number" id="objectif-input" placeholder="15000" min="0">
+    </div>
+    <div class="field">
+      <label>Épargne actuelle (€)</label>
+      <input type="number" id="epargne-input" placeholder="3000" min="0">
+    </div>
+    <div class="cta-row" style="margin-top: var(--space-lg);">
+      <button class="btn btn-primary" onclick="saveObjectif()">Enregistrer</button>
+      <button class="btn btn-secondary" onclick="closeModal('modal-objectif')">Annuler</button>
     </div>
   </div>
-</main>
+</div>
 
-<!-- MODALS -->
-<div id="modal-historique" class="modal"><div class="modal-content" style="max-width: 800px;"><div style="display: flex; justify-content: space-between; margin-bottom: var(--space-lg);"><h2>📊 Historique</h2><button onclick="closeHistorique()" style="background: none; border: none; font-size: 24px; cursor: pointer;">×</button></div><div id="modal-historique-content"></div></div></div>
-<div id="modal-versement" class="modal"><div class="modal-content"><h2 style="margin-bottom: var(--space-lg);">➕ Versement</h2><div class="field"><label>Montant (€)</label><input type="number" id="versement-montant" placeholder="100"></div><div class="cta-row" style="margin-top: var(--space-lg);"><button class="btn btn-primary" onclick="saveVersement()">Ajouter</button><button class="btn btn-secondary" onclick="closeVersement()">Annuler</button></div></div></div>
-<div id="modal-objectif" class="modal"><div class="modal-content"><h2 style="margin-bottom: var(--space-lg);">⚙️ Objectif</h2><div class="field" style="margin-bottom: var(--space-md);"><label>Objectif (€)</label><input type="number" id="objectif-input" placeholder="15000"></div><div class="field"><label>Épargne actuelle (€)</label><input type="number" id="epargne-input" placeholder="3000"></div><div class="cta-row" style="margin-top: var(--space-lg);"><button class="btn btn-primary" onclick="saveObjectif()">Enregistrer</button><button class="btn btn-secondary" onclick="closeObjectif()">Annuler</button></div></div></div>
-<div id="modal-abonnement" class="modal"><div class="modal-content"><h2 style="margin-bottom: var(--space-lg);">📺 Abonnement</h2><div class="field" style="margin-bottom: var(--space-md);"><label>Nom</label><input type="text" id="abo-nom" placeholder="Netflix..."></div><div class="field"><label>Montant (€)</label><input type="number" id="abo-montant" placeholder="15.99" step="0.01"></div><div class="cta-row" style="margin-top: var(--space-lg);"><button class="btn btn-primary" onclick="saveAbonnement()">Ajouter</button><button class="btn btn-secondary" onclick="closeAbonnement()">Annuler</button></div></div></div>
-<div id="modal-jeux" class="modal"><div class="modal-content"><h2 style="margin-bottom: var(--space-lg);">🎰 Jeux d'argent</h2><div class="field"><label>Montant mensuel (€)</label><input type="number" id="jeux-montant" placeholder="50"></div><div class="cta-row" style="margin-top: var(--space-lg);"><button class="btn btn-primary" onclick="saveJeux()">Enregistrer</button><button class="btn btn-secondary" onclick="closeJeux()">Annuler</button></div></div></div>
+<!-- Modal Abonnement -->
+<div class="modal" id="modal-abonnement">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>📺 Ajouter un abonnement</h2>
+      <button class="modal-close" onclick="closeModal('modal-abonnement')">&times;</button>
+    </div>
+    <div class="field" style="margin-bottom: var(--space-md);">
+      <label>Nom de l'abonnement</label>
+      <input type="text" id="abo-nom" placeholder="Netflix, Spotify, Salle de sport...">
+    </div>
+    <div class="field">
+      <label>Montant mensuel (€)</label>
+      <input type="number" id="abo-montant" placeholder="15.99" step="0.01" min="0">
+    </div>
+    <div class="cta-row" style="margin-top: var(--space-lg);">
+      <button class="btn btn-primary" onclick="saveAbonnement()">Ajouter</button>
+      <button class="btn btn-secondary" onclick="closeModal('modal-abonnement')">Annuler</button>
+    </div>
+  </div>
+</div>
 
-<footer class="footer"><a href="tarifs.html">Tarifs</a> · <a href="index.html">Accueil</a> · <span class="muted">© <span id="year"></span> Où part mon argent</span></footer>
+<!-- Modal Jeux -->
+<div class="modal" id="modal-jeux">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>🎰 Jeux d'argent</h2>
+      <button class="modal-close" onclick="closeModal('modal-jeux')">&times;</button>
+    </div>
+    <div class="field">
+      <label>Montant mensuel moyen (€)</label>
+      <input type="number" id="jeux-montant" placeholder="50" min="0">
+    </div>
+    <div class="cta-row" style="margin-top: var(--space-lg);">
+      <button class="btn btn-primary" onclick="saveJeux()">Enregistrer</button>
+      <button class="btn btn-secondary" onclick="closeModal('modal-jeux')">Annuler</button>
+    </div>
+  </div>
+</div>
 
+<!-- ===== SCRIPTS ===== -->
 <script src="assets/nav-auth.js"></script>
-<script src="js/dashboard.js"></script>
+<script>
+// ============================================
+// CONFIGURATION DES PLANS
+// ============================================
+const PLANS = {
+  free: { 
+    name: 'Gratuit', 
+    features: ['resume', 'historique'],
+    color: '#6b7280'
+  },
+  essential: { 
+    name: 'Essentiel', 
+    features: ['resume', 'historique', 'epargne', 'fuites', 'rappels'],
+    color: '#0d9f6f'
+  },
+  complete: { 
+    name: 'Complet', 
+    features: ['resume', 'historique', 'epargne', 'fuites', 'rappels', 'decisions', 'imprevu'],
+    color: '#3b82f6'
+  }
+};
+
+// ============================================
+// UTILITAIRES
+// ============================================
+function formatMoney(amount) {
+  return new Intl.NumberFormat('fr-FR', { 
+    style: 'currency', 
+    currency: 'EUR', 
+    minimumFractionDigits: 0, 
+    maximumFractionDigits: 0 
+  }).format(amount || 0);
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return '—';
+  return new Date(dateStr).toLocaleDateString('fr-FR', { 
+    day: 'numeric', 
+    month: 'long', 
+    year: 'numeric' 
+  });
+}
+
+function getData(key, defaultValue) {
+  try {
+    const val = localStorage.getItem(key);
+    if (!val) return defaultValue;
+    return JSON.parse(val);
+  } catch (e) {
+    console.error('Error reading', key, e);
+    return defaultValue;
+  }
+}
+
+function setData(key, value) {
+  localStorage.setItem(key, JSON.stringify(value));
+}
+
+function getScoreInfo(score) {
+  if (score >= 70) return { label: 'Bonne santé', class: 'success', title: 'Bonne gestion', desc: 'Continuez ainsi !' };
+  if (score >= 40) return { label: 'À surveiller', class: 'warning', title: 'Peut mieux faire', desc: 'Quelques ajustements possibles.' };
+  return { label: 'Attention', class: 'danger', title: 'Budget tendu', desc: 'Réduisez vos dépenses.' };
+}
+
+function calculateScore(data) {
+  if (!data || !data.revenus || data.revenus <= 0) return 0;
+  const ratio = data.resteAVivre / data.revenus;
+  if (ratio >= 0.25) return Math.min(100, Math.round(70 + ratio * 100));
+  if (ratio >= 0.10) return Math.round(40 + ratio * 200);
+  if (ratio > 0) return Math.max(10, Math.round(ratio * 400));
+  return 0;
+}
+
+// ============================================
+// NAVIGATION SECTIONS
+// ============================================
+function showSection(sectionId) {
+  // Vérifier l'accès
+  const plan = getData('plan', 'free');
+  const planConfig = PLANS[plan] || PLANS.free;
+  
+  if (!planConfig.features.includes(sectionId)) {
+    // Montrer quand même la section mais avec le blocage
+  }
+  
+  // Cacher toutes les sections
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  
+  // Afficher la section demandée
+  const section = document.getElementById('section-' + sectionId);
+  if (section) section.classList.add('active');
+  
+  // Mettre à jour le menu
+  document.querySelectorAll('.sidebar-link').forEach(link => {
+    link.classList.remove('active');
+    if (link.dataset.section === sectionId) {
+      link.classList.add('active');
+    }
+  });
+}
+
+// ============================================
+// MODALS
+// ============================================
+function openModal(id) {
+  document.getElementById(id).classList.add('open');
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+// Fermer modal en cliquant dehors
+document.addEventListener('click', (e) => {
+  if (e.target.classList.contains('modal')) {
+    e.target.classList.remove('open');
+  }
+});
+
+// ============================================
+// INITIALISATION
+// ============================================
+function initDashboard() {
+  const plan = getData('plan', 'free');
+  const lastTest = getData('lastTest', null);
+  const tests = getData('tests', []);
+  const savingsGoal = getData('savingsGoal', { objectif: 0, epargne: 0 });
+  const subscriptions = getData('subscriptions', []);
+  const gambling = getData('gambling', 0);
+  
+  const planConfig = PLANS[plan] || PLANS.free;
+  
+  // ===== SIDEBAR =====
+  document.getElementById('sidebar-plan').textContent = planConfig.name;
+  document.getElementById('sidebar-plan').style.color = planConfig.color;
+  
+  // Mettre à jour les badges du menu
+  updateMenuAccess(plan, planConfig);
+  
+  // ===== GESTION DES ACCÈS =====
+  toggleFeatureAccess('epargne', planConfig.features.includes('epargne'));
+  toggleFeatureAccess('fuites', planConfig.features.includes('fuites'));
+  toggleFeatureAccess('rappels', planConfig.features.includes('rappels'));
+  toggleFeatureAccess('decisions', planConfig.features.includes('decisions'));
+  toggleFeatureAccess('imprevu', planConfig.features.includes('imprevu'));
+  
+  // ===== RÉSUMÉ FINANCIER =====
+  if (!lastTest) {
+    document.getElementById('no-test-message').style.display = 'block';
+    document.getElementById('stats-grid').style.opacity = '0.5';
+    document.getElementById('test-badge').textContent = '—';
+    document.getElementById('score-value').textContent = '—';
+    document.getElementById('test-title').textContent = 'Aucun test';
+    document.getElementById('test-conseil').textContent = 'Faites votre premier test pour voir vos résultats.';
+    document.getElementById('test-date').textContent = '';
+  } else {
+    document.getElementById('no-test-message').style.display = 'none';
+    document.getElementById('stats-grid').style.opacity = '1';
+    
+    // Stats
+    document.getElementById('stat-revenus').textContent = formatMoney(lastTest.revenus);
+    document.getElementById('stat-dep-ess').textContent = formatMoney(lastTest.depensesEssentielles);
+    document.getElementById('stat-dep-non-ess').textContent = formatMoney(lastTest.depensesNonEssentielles);
+    document.getElementById('stat-reste').textContent = formatMoney(lastTest.resteAVivre);
+    
+    // Score
+    const score = lastTest.score || calculateScore(lastTest);
+    const scoreInfo = getScoreInfo(score);
+    
+    document.getElementById('test-badge').textContent = scoreInfo.label;
+    document.getElementById('test-badge').className = 'badge ' + scoreInfo.class;
+    document.getElementById('score-value').textContent = score;
+    document.getElementById('test-title').textContent = scoreInfo.title;
+    document.getElementById('test-conseil').textContent = lastTest.conseil || scoreInfo.desc;
+    document.getElementById('test-date').textContent = 'Dernier test : ' + formatDate(lastTest.date);
+    
+    // Animation cercle
+    const circumference = 2 * Math.PI * 35;
+    const offset = circumference - (score / 100) * circumference;
+    setTimeout(() => {
+      document.getElementById('score-circle').style.strokeDashoffset = offset;
+    }, 300);
+  }
+  
+  // ===== HISTORIQUE =====
+  renderHistorique(tests);
+  
+  // ===== ÉPARGNE =====
+  if (planConfig.features.includes('epargne')) {
+    renderEpargne(savingsGoal);
+  }
+  
+  // ===== FUITES =====
+  if (planConfig.features.includes('fuites')) {
+    renderFuites(subscriptions, gambling);
+  }
+}
+
+function updateMenuAccess(plan, planConfig) {
+  const menuItems = ['epargne', 'fuites', 'rappels', 'decisions', 'imprevu'];
+  
+  menuItems.forEach(item => {
+    const menuEl = document.getElementById('menu-' + item);
+    const badgeEl = document.getElementById('badge-' + item);
+    
+    if (planConfig.features.includes(item)) {
+      menuEl.classList.remove('locked');
+      badgeEl.style.display = 'none';
+    } else {
+      // Garder accessible mais montrer le badge
+      badgeEl.style.display = '';
+    }
+  });
+}
+
+function toggleFeatureAccess(feature, hasAccess) {
+  const content = document.getElementById(feature + '-content');
+  const locked = document.getElementById(feature + '-locked');
+  
+  if (content) content.style.display = hasAccess ? 'block' : 'none';
+  if (locked) locked.style.display = hasAccess ? 'none' : 'block';
+}
+
+// ============================================
+// HISTORIQUE
+// ============================================
+function renderHistorique(tests) {
+  const tbody = document.getElementById('historique-table');
+  const countEl = document.getElementById('historique-count');
+  
+  countEl.textContent = tests.length + ' test' + (tests.length > 1 ? 's' : '');
+  
+  if (tests.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: var(--space-xl); color: var(--text-muted);">Aucun test enregistré.<br><a href="test.html">Faire mon premier test</a></td></tr>';
+    return;
+  }
+  
+  tbody.innerHTML = tests.slice().reverse().map((t, i) => {
+    const score = t.score || calculateScore(t);
+    const scoreInfo = getScoreInfo(score);
+    const totalDep = (t.depensesEssentielles || 0) + (t.depensesNonEssentielles || 0);
+    const realIndex = tests.length - 1 - i;
+    
+    return `
+      <tr style="border-bottom: 1px solid var(--border-light);">
+        <td style="padding: var(--space-sm);">${formatDate(t.date)}</td>
+        <td style="padding: var(--space-sm); text-align: right;">${formatMoney(t.revenus)}</td>
+        <td style="padding: var(--space-sm); text-align: right;">${formatMoney(totalDep)}</td>
+        <td style="padding: var(--space-sm); text-align: right; font-weight: 600; color: ${t.resteAVivre >= 0 ? 'var(--accent)' : '#dc2626'};">${formatMoney(t.resteAVivre)}</td>
+        <td style="padding: var(--space-sm); text-align: center;"><span class="badge ${scoreInfo.class}">${score}</span></td>
+        <td style="padding: var(--space-sm); text-align: center;">
+          <button onclick="deleteTest(${realIndex})" style="background: none; border: none; color: #dc2626; cursor: pointer; font-size: 16px;">🗑️</button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function deleteTest(index) {
+  if (!confirm('Supprimer ce test ?')) return;
+  
+  const tests = getData('tests', []);
+  tests.splice(index, 1);
+  setData('tests', tests);
+  
+  if (tests.length > 0) {
+    setData('lastTest', tests[tests.length - 1]);
+  } else {
+    localStorage.removeItem('lastTest');
+  }
+  
+  initDashboard();
+}
+
+// ============================================
+// ÉPARGNE
+// ============================================
+function renderEpargne(goal) {
+  if (!goal || goal.objectif <= 0) {
+    document.getElementById('objectif-montant').textContent = '0 €';
+    document.getElementById('epargne-actuelle').textContent = '0 €';
+    document.getElementById('epargne-restante').textContent = '0 €';
+    document.getElementById('epargne-mensuelle').textContent = '0 €';
+    document.getElementById('progress-percent').textContent = '0%';
+    document.getElementById('progress-fill').style.width = '0%';
+    return;
+  }
+  
+  const percent = Math.min(100, Math.round((goal.epargne / goal.objectif) * 100));
+  const restant = Math.max(0, goal.objectif - goal.epargne);
+  const mensuel = restant > 0 ? Math.ceil(restant / 12) : 0;
+  
+  document.getElementById('objectif-montant').textContent = formatMoney(goal.objectif);
+  document.getElementById('epargne-actuelle').textContent = formatMoney(goal.epargne);
+  document.getElementById('epargne-restante').textContent = formatMoney(restant);
+  document.getElementById('epargne-mensuelle').textContent = formatMoney(mensuel);
+  document.getElementById('progress-percent').textContent = percent + '%';
+  
+  setTimeout(() => {
+    document.getElementById('progress-fill').style.width = percent + '%';
+  }, 300);
+  
+  // Badge
+  if (percent >= 100) {
+    document.getElementById('epargne-badge').textContent = '🎉 Objectif atteint !';
+    document.getElementById('epargne-badge').className = 'badge success';
+  } else if (percent >= 50) {
+    document.getElementById('epargne-badge').textContent = 'Bonne progression';
+    document.getElementById('epargne-badge').className = 'badge success';
+  } else {
+    document.getElementById('epargne-badge').textContent = 'En cours';
+    document.getElementById('epargne-badge').className = 'badge warning';
+  }
+}
+
+function saveVersement() {
+  const montant = parseFloat(document.getElementById('versement-montant').value) || 0;
+  if (montant <= 0) return alert('Entrez un montant valide');
+  
+  const goal = getData('savingsGoal', { objectif: 0, epargne: 0 });
+  goal.epargne = (goal.epargne || 0) + montant;
+  setData('savingsGoal', goal);
+  
+  document.getElementById('versement-montant').value = '';
+  closeModal('modal-versement');
+  initDashboard();
+}
+
+function saveObjectif() {
+  const objectif = parseFloat(document.getElementById('objectif-input').value) || 0;
+  const epargne = parseFloat(document.getElementById('epargne-input').value) || 0;
+  
+  setData('savingsGoal', { objectif, epargne });
+  closeModal('modal-objectif');
+  initDashboard();
+}
+
+// ============================================
+// FUITES
+// ============================================
+function renderFuites(subs, gambling) {
+  const list = document.getElementById('subscriptions-list');
+  
+  if (!subs || subs.length === 0) {
+    list.innerHTML = '<li style="color: var(--text-muted);">Aucun abonnement enregistré</li>';
+  } else {
+    list.innerHTML = subs.map((s, i) => `
+      <li style="display: flex; justify-content: space-between; align-items: center;">
+        <span>${s.nom}</span>
+        <span style="display: flex; align-items: center; gap: 8px;">
+          <strong>${formatMoney(s.montant)}</strong>
+          <button onclick="deleteAbonnement(${i})" style="background: none; border: none; color: #dc2626; cursor: pointer;">✕</button>
+        </span>
+      </li>
+    `).join('');
+  }
+  
+  document.getElementById('gambling-amount').textContent = formatMoney(gambling);
+  
+  const totalAbo = (subs || []).reduce((sum, s) => sum + (s.montant || 0), 0);
+  document.getElementById('total-fuites').textContent = formatMoney(totalAbo + (gambling || 0));
+}
+
+function saveAbonnement() {
+  const nom = document.getElementById('abo-nom').value.trim();
+  const montant = parseFloat(document.getElementById('abo-montant').value) || 0;
+  
+  if (!nom) return alert('Entrez un nom');
+  if (montant <= 0) return alert('Entrez un montant valide');
+  
+  const subs = getData('subscriptions', []);
+  subs.push({ nom, montant });
+  setData('subscriptions', subs);
+  
+  document.getElementById('abo-nom').value = '';
+  document.getElementById('abo-montant').value = '';
+  closeModal('modal-abonnement');
+  initDashboard();
+}
+
+function deleteAbonnement(index) {
+  const subs = getData('subscriptions', []);
+  subs.splice(index, 1);
+  setData('subscriptions', subs);
+  initDashboard();
+}
+
+function saveJeux() {
+  const montant = parseFloat(document.getElementById('jeux-montant').value) || 0;
+  setData('gambling', montant);
+  closeModal('modal-jeux');
+  initDashboard();
+}
+
+// ============================================
+// RAPPELS
+// ============================================
+function saveRappel() {
+  const active = document.getElementById('rappel-toggle').checked;
+  const email = document.getElementById('rappel-email').value.trim();
+  setData('rappelConfig', { active, email });
+  alert('Configuration enregistrée ! (fonctionnalité bientôt disponible)');
+}
+
+// ============================================
+// DÉMARRAGE
+// ============================================
+document.addEventListener('DOMContentLoaded', initDashboard);
+</script>
+
 </body>
 </html>
