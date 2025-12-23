@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Où part mon argent ?</title>
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css?v=2">
 </head>
 <body>
 
@@ -21,7 +21,11 @@
     <a class="nav-link active" href="index.html">Accueil</a>
     <a class="nav-link" href="test.html">Test gratuit</a>
     <a class="nav-link" href="tarifs.html">Tarifs</a>
-    <a class="nav-link" href="login.html">Connexion</a>
+    <!-- Visible si PAS connecté -->
+    <a class="nav-link" href="login.html" data-auth="out">Connexion</a>
+    <!-- Visible si connecté -->
+    <a class="nav-link" href="dashboard.html" data-auth="in">Dashboard</a>
+    <button class="btn-ghost" type="button" data-auth="in" data-logout>Déconnexion</button>
   </nav>
 </header>
 
@@ -69,17 +73,20 @@
     </ul>
     <div class="cta-row">
       <a class="btn btn-primary" href="test.html">Commencer gratuitement</a>
-      <a class="btn btn-ghost" href="login.html">Créer un compte</a>
+      <a class="btn btn-ghost" href="login.html" data-auth="out">Créer un compte</a>
+      <a class="btn btn-ghost" href="dashboard.html" data-auth="in">Mon Dashboard</a>
     </div>
   </section>
 
   <footer class="footer">
     <a href="tarifs.html">Tarifs</a> ·
-    <a href="login.html">Connexion</a> ·
+    <a href="login.html" data-auth="out">Connexion</a>
+    <a href="dashboard.html" data-auth="in">Dashboard</a> ·
     <span class="muted">© <span id="year"></span> Où part mon argent</span>
   </footer>
 </main>
 
+<script src="assets/nav-auth.js"></script>
 <script>
   document.getElementById("year").textContent = new Date().getFullYear();
 </script>
