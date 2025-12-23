@@ -13,30 +13,29 @@
 </head>
 
 <body>
-<header class="site-header">
-  <div class="site-header-inner">
-    <a href="/index.html" class="site-logo">
-      <span class="logo-icon">€</span>
-      <div class="logo-text">
-        <strong>Où part mon argent ?</strong>
-        <small>Clarté • Épargne • Décisions</small>
+  <header class="site-header">
+    <div class="brand">
+      <div class="logo">€</div>
+      <div>
+        <div class="brand-title">Où part mon argent ?</div>
+        <div class="brand-subtitle">Clarté • Épargne • Décisions</div>
       </div>
-    </a>
+    </div>
+ <nav class="nav">
+  <a class="nav-link" href="/index.html">Accueil</a>
+  <a class="nav-link" href="/test.html">Test gratuit</a>
+  <a class="nav-link" href="/tarifs.html">Tarifs</a>
 
-    <nav class="site-nav">
-      <a href="/index.html">Accueil</a>
-      <a href="/test.html">Test gratuit</a>
-      <a href="/tarifs.html">Tarifs</a>
+  <!-- Visible si PAS connecté -->
+  
+  <a class="nav-link" href="/login.html" data-auth="out">Connexion</a>
 
-      <!-- Déconnecté -->
-      <a href="/login.html" data-auth="logged-out">Connexion</a>
-
-      <!-- Connecté -->
-      <a href="/dashboard.html" data-auth="logged-in" class="active">Dashboard</a>
-      <a href="#" data-auth="logged-in" data-action="logout" class="btn-logout">
-        Déconnexion
-      </a>
-    </nav>
+  <!-- Visible si connecté -->
+  <a class="nav-link" href="/dashboard.html" data-auth="in">Dashboard</a>
+  <button class="btn-ghost" type="button" data-auth="in" data-logout>
+    Déconnexion
+  </button>
+</nav>
   </div>
 </header>
 
