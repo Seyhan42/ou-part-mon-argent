@@ -1,855 +1,802 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard | MonBudget</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        :root {
-            --bg-page: #F6F7F9;
-            --bg-card: #FFFFFF;
-            --accent: #16a34a;
-            --accent-light: #dcfce7;
-            --accent-dark: #15803d;
-            --text-primary: #1f2937;
-            --text-secondary: #6b7280;
-            --text-muted: #9ca3af;
-            --border: #e5e7eb;
-            --shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
-            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07), 0 2px 4px rgba(0, 0, 0, 0.05);
-            --danger: #dc2626;
-            --danger-light: #fee2e2;
-            --warning: #f59e0b;
-            --warning-light: #fef3c7;
-        }
-
-        body {
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: var(--bg-page);
-            color: var(--text-primary);
-            min-height: 100vh;
-            line-height: 1.6;
-        }
-
-        /* ========================================
-           HEADER / NAVIGATION
-        ======================================== */
-        .header {
-            background: var(--bg-card);
-            border-bottom: 1px solid var(--border);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .header-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 1.5rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            height: 64px;
-        }
-
-        .logo {
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: var(--accent);
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .nav {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .nav-link {
-            padding: 0.5rem 1rem;
-            color: var(--text-secondary);
-            text-decoration: none;
-            font-size: 0.9375rem;
-            font-weight: 500;
-            border-radius: 8px;
-            transition: all 0.2s ease;
-        }
-
-        .nav-link:hover {
-            color: var(--text-primary);
-            background: var(--bg-page);
-        }
-
-        .nav-link.active {
-            color: var(--accent);
-            background: var(--accent-light);
-        }
-
-        .nav-btn {
-            padding: 0.5rem 1.25rem;
-            background: var(--accent);
-            color: white;
-            text-decoration: none;
-            font-size: 0.9375rem;
-            font-weight: 600;
-            border-radius: 8px;
-            border: none;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .nav-btn:hover {
-            background: var(--accent-dark);
-        }
-
-        .nav-btn.outline {
-            background: transparent;
-            color: var(--danger);
-            border: 1px solid var(--danger);
-        }
-
-        .nav-btn.outline:hover {
-            background: var(--danger-light);
-        }
-
-        /* Mobile menu */
-        .menu-toggle {
-            display: none;
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 0.5rem;
-        }
-
-        .menu-toggle span {
-            display: block;
-            width: 24px;
-            height: 2px;
-            background: var(--text-primary);
-            margin: 5px 0;
-            transition: 0.3s;
-        }
-
-        @media (max-width: 768px) {
-            .menu-toggle {
-                display: block;
-            }
-
-            .nav {
-                position: absolute;
-                top: 64px;
-                left: 0;
-                right: 0;
-                background: var(--bg-card);
-                flex-direction: column;
-                padding: 1rem;
-                border-bottom: 1px solid var(--border);
-                display: none;
-                gap: 0.25rem;
-            }
-
-            .nav.open {
-                display: flex;
-            }
-
-            .nav-link, .nav-btn {
-                width: 100%;
-                text-align: center;
-            }
-        }
-
-        /* ========================================
-           MAIN CONTENT
-        ======================================== */
-        .main {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 2rem 1.5rem;
-        }
-
-        .page-header {
-            margin-bottom: 2rem;
-        }
-
-        .page-title {
-            font-size: 1.75rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            margin-bottom: 0.5rem;
-        }
-
-        .page-subtitle {
-            color: var(--text-secondary);
-            font-size: 1rem;
-        }
-
-        /* ========================================
-           GRILLES
-        ======================================== */
-        .grid-2 {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 1.5rem;
-        }
-
-        .grid-4 {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 1.5rem;
-        }
-
-        @media (max-width: 1024px) {
-            .grid-4 {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-
-        @media (max-width: 640px) {
-            .grid-4, .grid-2 {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* ========================================
-           CARTES
-        ======================================== */
-        .card {
-            background: var(--bg-card);
-            border-radius: 12px;
-            padding: 1.5rem;
-            border: 1px solid var(--border);
-            box-shadow: var(--shadow);
-            transition: all 0.2s ease;
-        }
-
-        .card:hover {
-            box-shadow: var(--shadow-md);
-        }
-
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 1rem;
-        }
-
-        .card-label {
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-            font-weight: 500;
-        }
-
-        .card-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.125rem;
-        }
-
-        .card-icon.green {
-            background: var(--accent-light);
-        }
-
-        .card-icon.red {
-            background: var(--danger-light);
-        }
-
-        .card-icon.orange {
-            background: var(--warning-light);
-        }
-
-        .card-value {
-            font-size: 1.875rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            margin-bottom: 0.25rem;
-        }
-
-        .card-change {
-            font-size: 0.8125rem;
-            display: flex;
-            align-items: center;
-            gap: 0.25rem;
-        }
-
-        .card-change.positive {
-            color: var(--accent);
-        }
-
-        .card-change.negative {
-            color: var(--danger);
-        }
-
-        /* ========================================
-           SECTIONS
-        ======================================== */
-        .section {
-            margin-top: 2rem;
-        }
-
-        .section-title {
-            font-size: 1.125rem;
-            font-weight: 600;
-            color: var(--text-primary);
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        /* Card Large */
-        .card-large {
-            background: var(--bg-card);
-            border-radius: 12px;
-            padding: 1.75rem;
-            border: 1px solid var(--border);
-            box-shadow: var(--shadow);
-        }
-
-        .card-large-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.25rem;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .card-large-title {
-            font-size: 1rem;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-
-        .badge {
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 500;
-        }
-
-        .badge.success {
-            background: var(--accent-light);
-            color: var(--accent-dark);
-        }
-
-        .badge.warning {
-            background: var(--warning-light);
-            color: #b45309;
-        }
-
-        /* Test Section */
-        .test-content {
-            display: flex;
-            gap: 1.5rem;
-            align-items: center;
-        }
-
-        .test-score {
-            position: relative;
-            width: 100px;
-            height: 100px;
-            flex-shrink: 0;
-        }
-
-        .test-score svg {
-            transform: rotate(-90deg);
-        }
-
-        .test-score-bg {
-            fill: none;
-            stroke: var(--border);
-            stroke-width: 8;
-        }
-
-        .test-score-fill {
-            fill: none;
-            stroke: var(--accent);
-            stroke-width: 8;
-            stroke-linecap: round;
-            stroke-dasharray: 251;
-            stroke-dashoffset: 251;
-            transition: stroke-dashoffset 1s ease;
-        }
-
-        .test-score-value {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-        }
-
-        .test-score-value strong {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--text-primary);
-        }
-
-        .test-score-value span {
-            display: block;
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-        }
-
-        .test-info h4 {
-            font-size: 1rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-        }
-
-        .test-info p {
-            color: var(--text-secondary);
-            font-size: 0.9375rem;
-            margin-bottom: 1rem;
-            line-height: 1.5;
-        }
-
-        .test-date {
-            font-size: 0.8125rem;
-            color: var(--text-muted);
-        }
-
-        /* Buttons */
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            padding: 0.75rem 1.5rem;
-            border-radius: 8px;
-            font-size: 0.9375rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            text-decoration: none;
-            border: none;
-        }
-
-        .btn-primary {
-            background: var(--accent);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: var(--accent-dark);
-        }
-
-        .btn-secondary {
-            background: var(--bg-page);
-            color: var(--text-primary);
-            border: 1px solid var(--border);
-        }
-
-        .btn-secondary:hover {
-            background: var(--border);
-        }
-
-        .btn-group {
-            display: flex;
-            gap: 0.75rem;
-            margin-top: 1.25rem;
-        }
-
-        @media (max-width: 640px) {
-            .test-content {
-                flex-direction: column;
-                text-align: center;
-            }
-
-            .btn-group {
-                flex-direction: column;
-            }
-
-            .btn {
-                width: 100%;
-            }
-        }
-
-        /* Progress Bar */
-        .savings-goal {
-            margin-bottom: 1.5rem;
-        }
-
-        .savings-amount {
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--accent);
-        }
-
-        .savings-label {
-            color: var(--text-secondary);
-            font-size: 0.875rem;
-        }
-
-        .progress-section {
-            margin: 1.5rem 0;
-        }
-
-        .progress-header {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 0.5rem;
-        }
-
-        .progress-label {
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-        }
-
-        .progress-value {
-            font-size: 0.875rem;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-
-        .progress-bar {
-            height: 10px;
-            background: var(--bg-page);
-            border-radius: 5px;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--accent), #22c55e);
-            border-radius: 5px;
-            transition: width 1s ease;
-            width: 0%;
-        }
-
-        .savings-stats {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 1rem;
-            margin-top: 1.5rem;
-            padding-top: 1.5rem;
-            border-top: 1px solid var(--border);
-        }
-
-        .savings-stat {
-            text-align: center;
-        }
-
-        .savings-stat-value {
-            font-size: 1.25rem;
-            font-weight: 700;
-        }
-
-        .savings-stat-value.green {
-            color: var(--accent);
-        }
-
-        .savings-stat-value.orange {
-            color: var(--warning);
-        }
-
-        .savings-stat-label {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            margin-top: 0.25rem;
-        }
-
-        @media (max-width: 480px) {
-            .savings-stats {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard | MonBudget</title>
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root{
+      --bg-page:#F6F7F9;
+      --bg-card:#FFFFFF;
+      --accent:#16a34a;
+      --accent-light:#dcfce7;
+      --accent-dark:#15803d;
+      --text-primary:#1f2937;
+      --text-secondary:#6b7280;
+      --text-muted:#9ca3af;
+      --border:#e5e7eb;
+      --shadow:0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.06);
+      --shadow-md:0 4px 6px rgba(0,0,0,.07), 0 2px 4px rgba(0,0,0,.05);
+      --danger:#dc2626;
+      --danger-light:#fee2e2;
+      --warning:#f59e0b;
+      --warning-light:#fef3c7;
+    }
+
+    body{
+      font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+      background:var(--bg-page);
+      color:var(--text-primary);
+      min-height:100vh;
+      line-height:1.6;
+    }
+
+    /* ========================================
+       HEADER / NAVIGATION
+    ======================================== */
+    .header{
+      background:var(--bg-card);
+      border-bottom:1px solid var(--border);
+      position:sticky;
+      top:0;
+      z-index:100;
+    }
+
+    .header-container{
+      max-width:1200px;
+      margin:0 auto;
+      padding:0 1.5rem;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      height:64px;
+    }
+
+    .logo{
+      font-size:1.25rem;
+      font-weight:700;
+      color:var(--accent);
+      text-decoration:none;
+      display:flex;
+      align-items:center;
+      gap:.5rem;
+      white-space:nowrap;
+    }
+
+    .nav{
+      display:flex;
+      align-items:center;
+      gap:.5rem;
+    }
+
+    .nav-link{
+      padding:.5rem 1rem;
+      color:var(--text-secondary);
+      text-decoration:none;
+      font-size:.9375rem;
+      font-weight:500;
+      border-radius:8px;
+      transition:all .2s ease;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+    }
+
+    .nav-link:hover{
+      color:var(--text-primary);
+      background:var(--bg-page);
+    }
+
+    .nav-link.active{
+      color:var(--accent);
+      background:var(--accent-light);
+    }
+
+    .nav-btn{
+      padding:.5rem 1.25rem;
+      background:var(--accent);
+      color:#fff;
+      text-decoration:none;
+      font-size:.9375rem;
+      font-weight:600;
+      border-radius:8px;
+      border:none;
+      cursor:pointer;
+      transition:all .2s ease;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+    }
+
+    .nav-btn:hover{ background:var(--accent-dark); }
+
+    .nav-btn.outline{
+      background:transparent;
+      color:var(--danger);
+      border:1px solid var(--danger);
+    }
+
+    .nav-btn.outline:hover{ background:var(--danger-light); }
+
+    /* Mobile menu */
+    .menu-toggle{
+      display:none;
+      background:none;
+      border:none;
+      cursor:pointer;
+      padding:.5rem;
+    }
+
+    .menu-toggle span{
+      display:block;
+      width:24px;
+      height:2px;
+      background:var(--text-primary);
+      margin:5px 0;
+      transition:.3s;
+    }
+
+    @media (max-width:768px){
+      .menu-toggle{ display:block; }
+
+      .nav{
+        position:absolute;
+        top:64px;
+        left:0;
+        right:0;
+        background:var(--bg-card);
+        flex-direction:column;
+        padding:1rem;
+        border-bottom:1px solid var(--border);
+        display:none;
+        gap:.25rem;
+      }
+
+      .nav.open{ display:flex; }
+
+      .nav-link, .nav-btn{
+        width:100%;
+        text-align:center;
+      }
+    }
+
+    /* ========================================
+       MAIN CONTENT
+    ======================================== */
+    .main{
+      max-width:1200px;
+      margin:0 auto;
+      padding:2rem 1.5rem;
+    }
+
+    .page-header{ margin-bottom:2rem; }
+
+    .page-title{
+      font-size:1.75rem;
+      font-weight:700;
+      color:var(--text-primary);
+      margin-bottom:.5rem;
+    }
+
+    .page-subtitle{
+      color:var(--text-secondary);
+      font-size:1rem;
+    }
+
+    /* ========================================
+       GRILLES
+    ======================================== */
+    .grid-2{
+      display:grid;
+      grid-template-columns:repeat(2, 1fr);
+      gap:1.5rem;
+    }
+
+    .grid-4{
+      display:grid;
+      grid-template-columns:repeat(4, 1fr);
+      gap:1.5rem;
+    }
+
+    @media (max-width:1024px){
+      .grid-4{ grid-template-columns:repeat(2, 1fr); }
+    }
+
+    @media (max-width:640px){
+      .grid-4, .grid-2{ grid-template-columns:1fr; }
+    }
+
+    /* ========================================
+       CARTES
+    ======================================== */
+    .card{
+      background:var(--bg-card);
+      border-radius:12px;
+      padding:1.5rem;
+      border:1px solid var(--border);
+      box-shadow:var(--shadow);
+      transition:all .2s ease;
+    }
+
+    .card:hover{ box-shadow:var(--shadow-md); }
+
+    .card-header{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      margin-bottom:1rem;
+    }
+
+    .card-label{
+      font-size:.875rem;
+      color:var(--text-secondary);
+      font-weight:500;
+    }
+
+    .card-icon{
+      width:40px;
+      height:40px;
+      border-radius:10px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:1.125rem;
+    }
+
+    .card-icon.green{ background:var(--accent-light); }
+    .card-icon.red{ background:var(--danger-light); }
+    .card-icon.orange{ background:var(--warning-light); }
+
+    .card-value{
+      font-size:1.875rem;
+      font-weight:700;
+      color:var(--text-primary);
+      margin-bottom:.25rem;
+    }
+
+    .card-change{
+      font-size:.8125rem;
+      display:flex;
+      align-items:center;
+      gap:.25rem;
+    }
+
+    .card-change.positive{ color:var(--accent); }
+    .card-change.negative{ color:var(--danger); }
+
+    /* ========================================
+       SECTIONS
+    ======================================== */
+    .section{ margin-top:2rem; }
+
+    .card-large{
+      background:var(--bg-card);
+      border-radius:12px;
+      padding:1.75rem;
+      border:1px solid var(--border);
+      box-shadow:var(--shadow);
+    }
+
+    .card-large-header{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:1.25rem;
+      padding-bottom:1rem;
+      border-bottom:1px solid var(--border);
+      gap:1rem;
+    }
+
+    .card-large-title{
+      font-size:1rem;
+      font-weight:600;
+      color:var(--text-primary);
+    }
+
+    .badge{
+      padding:.25rem .75rem;
+      border-radius:20px;
+      font-size:.75rem;
+      font-weight:500;
+      white-space:nowrap;
+    }
+
+    .badge.success{ background:var(--accent-light); color:var(--accent-dark); }
+    .badge.warning{ background:var(--warning-light); color:#b45309; }
+
+    /* Test Section */
+    .test-content{
+      display:flex;
+      gap:1.5rem;
+      align-items:center;
+    }
+
+    .test-score{
+      position:relative;
+      width:100px;
+      height:100px;
+      flex-shrink:0;
+    }
+
+    .test-score svg{ transform:rotate(-90deg); }
+
+    .test-score-bg{
+      fill:none;
+      stroke:var(--border);
+      stroke-width:8;
+    }
+
+    .test-score-fill{
+      fill:none;
+      stroke:var(--accent);
+      stroke-width:8;
+      stroke-linecap:round;
+      stroke-dasharray:251;
+      stroke-dashoffset:251;
+      transition:stroke-dashoffset 1s ease;
+    }
+
+    .test-score-value{
+      position:absolute;
+      top:50%;
+      left:50%;
+      transform:translate(-50%, -50%);
+      text-align:center;
+    }
+
+    .test-score-value strong{
+      font-size:1.5rem;
+      font-weight:700;
+      color:var(--text-primary);
+    }
+
+    .test-score-value span{
+      display:block;
+      font-size:.75rem;
+      color:var(--text-secondary);
+    }
+
+    .test-info h4{
+      font-size:1rem;
+      font-weight:600;
+      margin-bottom:.5rem;
+    }
+
+    .test-info p{
+      color:var(--text-secondary);
+      font-size:.9375rem;
+      margin-bottom:1rem;
+      line-height:1.5;
+    }
+
+    .test-date{
+      font-size:.8125rem;
+      color:var(--text-muted);
+    }
+
+    /* Buttons */
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:.5rem;
+      padding:.75rem 1.5rem;
+      border-radius:8px;
+      font-size:.9375rem;
+      font-weight:600;
+      cursor:pointer;
+      transition:all .2s ease;
+      text-decoration:none;
+      border:none;
+    }
+
+    .btn-primary{ background:var(--accent); color:#fff; }
+    .btn-primary:hover{ background:var(--accent-dark); }
+
+    .btn-secondary{
+      background:var(--bg-page);
+      color:var(--text-primary);
+      border:1px solid var(--border);
+    }
+
+    .btn-secondary:hover{ background:var(--border); }
+
+    .btn-group{
+      display:flex;
+      gap:.75rem;
+      margin-top:1.25rem;
+      flex-wrap:wrap;
+    }
+
+    @media (max-width:640px){
+      .test-content{ flex-direction:column; text-align:center; }
+      .btn-group{ flex-direction:column; }
+      .btn{ width:100%; }
+    }
+
+    /* Progress Bar */
+    .savings-goal{ margin-bottom:1.5rem; }
+
+    .savings-amount{
+      font-size:2rem;
+      font-weight:700;
+      color:var(--accent);
+    }
+
+    .savings-label{
+      color:var(--text-secondary);
+      font-size:.875rem;
+    }
+
+    .progress-section{ margin:1.5rem 0; }
+
+    .progress-header{
+      display:flex;
+      justify-content:space-between;
+      margin-bottom:.5rem;
+    }
+
+    .progress-label{
+      font-size:.875rem;
+      color:var(--text-secondary);
+    }
+
+    .progress-value{
+      font-size:.875rem;
+      font-weight:600;
+      color:var(--text-primary);
+    }
+
+    .progress-bar{
+      height:10px;
+      background:var(--bg-page);
+      border-radius:5px;
+      overflow:hidden;
+    }
+
+    .progress-fill{
+      height:100%;
+      background:linear-gradient(90deg, var(--accent), #22c55e);
+      border-radius:5px;
+      transition:width 1s ease;
+      width:0%;
+    }
+
+    .savings-stats{
+      display:grid;
+      grid-template-columns:repeat(3, 1fr);
+      gap:1rem;
+      margin-top:1.5rem;
+      padding-top:1.5rem;
+      border-top:1px solid var(--border);
+    }
+
+    .savings-stat{ text-align:center; }
+
+    .savings-stat-value{
+      font-size:1.25rem;
+      font-weight:700;
+    }
+
+    .savings-stat-value.green{ color:var(--accent); }
+    .savings-stat-value.orange{ color:var(--warning); }
+
+    .savings-stat-label{
+      font-size:.75rem;
+      color:var(--text-muted);
+      margin-top:.25rem;
+    }
+
+    @media (max-width:480px){
+      .savings-stats{ grid-template-columns:1fr; }
+    }
+  </style>
 </head>
+
 <body>
-    <!-- ========================================
-         HEADER / NAVIGATION
-    ======================================== -->
-    <header class="header">
-        <div class="header-container">
-            <a href="/index.html" class="logo">
-                💰 MonBudget
-            </a>
+  <!-- ========================================
+       HEADER / NAVIGATION
+  ======================================== -->
+  <header class="header">
+    <div class="header-container">
+      <a href="/index.html" class="logo">💰 MonBudget</a>
 
-            <button class="menu-toggle" onclick="toggleMenu()" aria-label="Menu">
-                <span></span>
-                <span></span>
-                <span></span>
-            </button>
+      <button class="menu-toggle" type="button"
+              onclick="toggleMenu()"
+              aria-label="Ouvrir le menu"
+              aria-controls="nav"
+              aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
 
-            <nav class="top-nav">
-  <a href="/index.html">Accueil</a>
-  <a href="/test.html">Test gratuit</a>
-  <a href="/tarifs.html">Tarifs</a>
+      <!-- ✅ NAV corrigée (id="nav", class="nav", classes nav-link/nav-btn, data-auth OK) -->
+      <nav id="nav" class="nav">
+        <a class="nav-link" href="/index.html">Accueil</a>
+        <a class="nav-link" href="/test.html">Test gratuit</a>
+        <a class="nav-link" href="/tarifs.html">Tarifs</a>
 
-  <!-- Visible seulement si déconnecté -->
-  <a href="/login.html" data-auth="logged-out">Connexion</a>
+        <!-- Visible seulement si déconnecté -->
+        <a class="nav-link" href="/login.html" data-auth="logged-out">Connexion</a>
 
-  <!-- Visible seulement si connecté -->
-  <a href="/dashboard.html" data-auth="logged-in">Dashboard</a>
-  <a href="#" data-auth="logged-in" data-action="logout">Déconnexion</a>
-</nav>
+        <!-- Visible seulement si connecté -->
+        <a class="nav-link active" href="/dashboard.html" data-auth="logged-in">Dashboard</a>
+        <a class="nav-btn outline" href="#" data-auth="logged-in" data-action="logout">Déconnexion</a>
+      </nav>
+    </div>
+  </header>
 
+  <!-- ========================================
+       CONTENU PRINCIPAL
+  ======================================== -->
+  <main class="main">
+    <div class="page-header">
+      <h1 class="page-title">Tableau de bord</h1>
+      <p class="page-subtitle">Bienvenue ! Voici le résumé de votre situation financière.</p>
+    </div>
+
+    <!-- Section : Résumé Financier -->
+    <div class="grid-4">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-label">Revenus</span>
+          <div class="card-icon green">💵</div>
         </div>
-    </header>
+        <div class="card-value" id="revenus">0 €</div>
+        <div class="card-change positive"><span>↑ 5.2%</span> vs mois dernier</div>
+      </div>
 
-    <!-- ========================================
-         CONTENU PRINCIPAL
-    ======================================== -->
-    <main class="main">
-        <div class="page-header">
-            <h1 class="page-title">Tableau de bord</h1>
-            <p class="page-subtitle">Bienvenue ! Voici le résumé de votre situation financière.</p>
+      <div class="card">
+        <div class="card-header">
+          <span class="card-label">Dépenses essentielles</span>
+          <div class="card-icon red">🏠</div>
+        </div>
+        <div class="card-value" id="depenses-essentielles">0 €</div>
+        <div class="card-change negative"><span>↑ 2.1%</span> vs mois dernier</div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-label">Dépenses non essentielles</span>
+          <div class="card-icon orange">🛍️</div>
+        </div>
+        <div class="card-value" id="depenses-non-essentielles">0 €</div>
+        <div class="card-change positive"><span>↓ 8.4%</span> vs mois dernier</div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-label">Reste à vivre</span>
+          <div class="card-icon green">✨</div>
+        </div>
+        <div class="card-value" id="reste-a-vivre">0 €</div>
+        <div class="card-change positive"><span>↑ 12.3%</span> vs mois dernier</div>
+      </div>
+    </div>
+
+    <!-- Sections Test + Épargne -->
+    <div class="section">
+      <div class="grid-2">
+        <!-- Section : Dernier Test -->
+        <div class="card-large">
+          <div class="card-large-header">
+            <h3 class="card-large-title">🎯 Dernier test financier</h3>
+            <span class="badge success" id="test-badge">Bonne santé</span>
+          </div>
+
+          <div class="test-content">
+            <div class="test-score">
+              <svg width="100" height="100" viewBox="0 0 100 100">
+                <circle class="test-score-bg" cx="50" cy="50" r="40"></circle>
+                <circle class="test-score-fill" id="score-circle" cx="50" cy="50" r="40"></circle>
+              </svg>
+              <div class="test-score-value">
+                <strong id="score-value">0</strong>
+                <span>/100</span>
+              </div>
+            </div>
+
+            <div class="test-info">
+              <h4 id="test-title">Bonne gestion budgétaire</h4>
+              <p id="test-description">
+                Votre situation financière est saine. Continuez à épargner régulièrement pour atteindre vos objectifs.
+              </p>
+              <span class="test-date" id="test-date">Dernier test : --</span>
+            </div>
+          </div>
+
+          <div class="btn-group">
+            <a href="/test.html" class="btn btn-primary">🔄 Refaire un test</a>
+            <button class="btn btn-secondary" type="button">📊 Voir l'historique</button>
+          </div>
         </div>
 
-        <!-- Section : Résumé Financier -->
-        <div class="grid-4">
-            <div class="card">
-                <div class="card-header">
-                    <span class="card-label">Revenus</span>
-                    <div class="card-icon green">💵</div>
-                </div>
-                <div class="card-value" id="revenus">0 €</div>
-                <div class="card-change positive">
-                    <span>↑ 5.2%</span> vs mois dernier
-                </div>
-            </div>
+        <!-- Section : Objectif d'Épargne -->
+        <div class="card-large">
+          <div class="card-large-header">
+            <h3 class="card-large-title">💎 Objectif d'épargne</h3>
+            <span class="badge warning" id="savings-badge">En cours</span>
+          </div>
 
-            <div class="card">
-                <div class="card-header">
-                    <span class="card-label">Dépenses essentielles</span>
-                    <div class="card-icon red">🏠</div>
-                </div>
-                <div class="card-value" id="depenses-essentielles">0 €</div>
-                <div class="card-change negative">
-                    <span>↑ 2.1%</span> vs mois dernier
-                </div>
-            </div>
+          <div class="savings-goal">
+            <span class="savings-label">Objectif total</span>
+            <div class="savings-amount" id="objectif-montant">0 €</div>
+          </div>
 
-            <div class="card">
-                <div class="card-header">
-                    <span class="card-label">Dépenses non essentielles</span>
-                    <div class="card-icon orange">🛍️</div>
-                </div>
-                <div class="card-value" id="depenses-non-essentielles">0 €</div>
-                <div class="card-change positive">
-                    <span>↓ 8.4%</span> vs mois dernier
-                </div>
+          <div class="progress-section">
+            <div class="progress-header">
+              <span class="progress-label">Progression</span>
+              <span class="progress-value" id="progress-percent">0%</span>
             </div>
+            <div class="progress-bar">
+              <div class="progress-fill" id="progress-fill"></div>
+            </div>
+          </div>
 
-            <div class="card">
-                <div class="card-header">
-                    <span class="card-label">Reste à vivre</span>
-                    <div class="card-icon green">✨</div>
-                </div>
-                <div class="card-value" id="reste-a-vivre">0 €</div>
-                <div class="card-change positive">
-                    <span>↑ 12.3%</span> vs mois dernier
-                </div>
+          <div class="savings-stats">
+            <div class="savings-stat">
+              <div class="savings-stat-value green" id="epargne-actuelle">0 €</div>
+              <div class="savings-stat-label">Épargné</div>
             </div>
+            <div class="savings-stat">
+              <div class="savings-stat-value orange" id="epargne-restante">0 €</div>
+              <div class="savings-stat-label">Restant</div>
+            </div>
+            <div class="savings-stat">
+              <div class="savings-stat-value" id="epargne-mensuelle">0 €</div>
+              <div class="savings-stat-label">Conseillé / mois</div>
+            </div>
+          </div>
+
+          <div class="btn-group">
+            <button class="btn btn-primary" type="button">➕ Ajouter un versement</button>
+            <button class="btn btn-secondary" type="button">⚙️ Modifier</button>
+          </div>
         </div>
+      </div>
+    </div>
+  </main>
 
-        <!-- Sections Test + Épargne -->
-        <div class="section">
-            <div class="grid-2">
-                <!-- Section : Dernier Test -->
-                <div class="card-large">
-                    <div class="card-large-header">
-                        <h3 class="card-large-title">🎯 Dernier test financier</h3>
-                        <span class="badge success" id="test-badge">Bonne santé</span>
-                    </div>
+  <!-- Scripts -->
+  <script src="/nav-auth.js"></script>
 
-                    <div class="test-content">
-                        <div class="test-score">
-                            <svg width="100" height="100" viewBox="0 0 100 100">
-                                <circle class="test-score-bg" cx="50" cy="50" r="40"/>
-                                <circle class="test-score-fill" id="score-circle" cx="50" cy="50" r="40"/>
-                            </svg>
-                            <div class="test-score-value">
-                                <strong id="score-value">0</strong>
-                                <span>/100</span>
-                            </div>
-                        </div>
+  <script>
+    // ✅ Protection : si pas connecté -> login
+    if (localStorage.getItem('auth') !== '1') {
+      window.location.href = '/login.html';
+    }
 
-                        <div class="test-info">
-                            <h4 id="test-title">Bonne gestion budgétaire</h4>
-                            <p id="test-description">Votre situation financière est saine. Continuez à épargner régulièrement pour atteindre vos objectifs.</p>
-                            <span class="test-date" id="test-date">Dernier test : --</span>
-                        </div>
-                    </div>
+    // ============================================
+    // DONNÉES EXEMPLES
+    // ============================================
+    const financialData = {
+      revenus: 3850,
+      depensesEssentielles: 1920,
+      depensesNonEssentielles: 580,
+      resteAVivre: 1350,
+      objectifEpargne: 15000,
+      epargneActuelle: 9750,
+      epargneMensuelleConseillee: 450
+    };
 
-                    <div class="btn-group">
-                        <a href="/test.html" class="btn btn-primary">🔄 Refaire un test</a>
-                        <button class="btn btn-secondary">📊 Voir l'historique</button>
-                    </div>
-                </div>
+    const testData = {
+      score: 78,
+      date: '15 décembre 2024',
+      titre: 'Bonne gestion budgétaire',
+      description: 'Votre situation financière est saine. Continuez à épargner régulièrement pour atteindre vos objectifs.'
+    };
 
-                <!-- Section : Objectif d'Épargne -->
-                <div class="card-large">
-                    <div class="card-large-header">
-                        <h3 class="card-large-title">💎 Objectif d'épargne</h3>
-                        <span class="badge warning" id="savings-badge">En cours</span>
-                    </div>
+    // ============================================
+    // FONCTIONS UTILITAIRES
+    // ============================================
+    function formatMoney(amount) {
+      return new Intl.NumberFormat('fr-FR', {
+        style: 'currency',
+        currency: 'EUR',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+      }).format(amount);
+    }
 
-                    <div class="savings-goal">
-                        <span class="savings-label">Objectif total</span>
-                        <div class="savings-amount" id="objectif-montant">0 €</div>
-                    </div>
+    function animateValue(element, start, end, duration, formatter) {
+      let startTime = null;
 
-                    <div class="progress-section">
-                        <div class="progress-header">
-                            <span class="progress-label">Progression</span>
-                            <span class="progress-value" id="progress-percent">0%</span>
-                        </div>
-                        <div class="progress-bar">
-                            <div class="progress-fill" id="progress-fill"></div>
-                        </div>
-                    </div>
+      function step(timestamp) {
+        if (!startTime) startTime = timestamp;
+        const progress = Math.min((timestamp - startTime) / duration, 1);
+        const value = Math.floor(progress * (end - start) + start);
+        element.textContent = formatter ? formatter(value) : value;
 
-                    <div class="savings-stats">
-                        <div class="savings-stat">
-                            <div class="savings-stat-value green" id="epargne-actuelle">0 €</div>
-                            <div class="savings-stat-label">Épargné</div>
-                        </div>
-                        <div class="savings-stat">
-                            <div class="savings-stat-value orange" id="epargne-restante">0 €</div>
-                            <div class="savings-stat-label">Restant</div>
-                        </div>
-                        <div class="savings-stat">
-                            <div class="savings-stat-value" id="epargne-mensuelle">0 €</div>
-                            <div class="savings-stat-label">Conseillé / mois</div>
-                        </div>
-                    </div>
+        if (progress < 1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    }
 
-                    <div class="btn-group">
-                        <button class="btn btn-primary">➕ Ajouter un versement</button>
-                        <button class="btn btn-secondary">⚙️ Modifier</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </main>
+    // ============================================
+    // INITIALISATION
+    // ============================================
+    function initDashboard() {
+      // Animer les valeurs financières
+      animateValue(document.getElementById('revenus'), 0, financialData.revenus, 800, formatMoney);
+      animateValue(document.getElementById('depenses-essentielles'), 0, financialData.depensesEssentielles, 800, formatMoney);
+      animateValue(document.getElementById('depenses-non-essentielles'), 0, financialData.depensesNonEssentielles, 800, formatMoney);
+      animateValue(document.getElementById('reste-a-vivre'), 0, financialData.resteAVivre, 800, formatMoney);
 
-    <!-- Scripts -->
-    <script src="/nav-auth.js"></script>
-    <script>
-        // ============================================
-        // DONNÉES EXEMPLES
-        // ============================================
-        const financialData = {
-            revenus: 3850,
-            depensesEssentielles: 1920,
-            depensesNonEssentielles: 580,
-            resteAVivre: 1350,
-            objectifEpargne: 15000,
-            epargneActuelle: 9750,
-            epargneMensuelleConseillee: 450
-        };
+      // Section Test
+      initTestSection();
 
-        const testData = {
-            score: 78,
-            date: '15 décembre 2024',
-            titre: 'Bonne gestion budgétaire',
-            description: 'Votre situation financière est saine. Continuez à épargner régulièrement pour atteindre vos objectifs.'
-        };
+      // Section Épargne
+      initSavingsSection();
 
-        // ============================================
-        // FONCTIONS UTILITAIRES
-        // ============================================
-        function formatMoney(amount) {
-            return new Intl.NumberFormat('fr-FR', {
-                style: 'currency',
-                currency: 'EUR',
-                minimumFractionDigits: 0,
-                maximumFractionDigits: 0
-            }).format(amount);
-        }
+      // ✅ Met à jour la nav (au cas où)
+      if (window.authManager && window.authManager.updateNavigation) {
+        window.authManager.updateNavigation();
+      }
+    }
 
-        function animateValue(element, start, end, duration, formatter) {
-            let startTime = null;
-            
-            function step(timestamp) {
-                if (!startTime) startTime = timestamp;
-                const progress = Math.min((timestamp - startTime) / duration, 1);
-                const value = Math.floor(progress * (end - start) + start);
-                element.textContent = formatter ? formatter(value) : value;
-                
-                if (progress < 1) {
-                    requestAnimationFrame(step);
-                }
-            }
-            
-            requestAnimationFrame(step);
-        }
+    function initTestSection() {
+      // Score circulaire
+      const circumference = 2 * Math.PI * 40;
+      const offset = circumference - (testData.score / 100) * circumference;
+      const scoreCircle = document.getElementById('score-circle');
 
-        // ============================================
-        // INITIALISATION
-        // ============================================
-        function initDashboard() {
-            // Animer les valeurs financières
-            animateValue(document.getElementById('revenus'), 0, financialData.revenus, 800, formatMoney);
-            animateValue(document.getElementById('depenses-essentielles'), 0, financialData.depensesEssentielles, 800, formatMoney);
-            animateValue(document.getElementById('depenses-non-essentielles'), 0, financialData.depensesNonEssentielles, 800, formatMoney);
-            animateValue(document.getElementById('reste-a-vivre'), 0, financialData.resteAVivre, 800, formatMoney);
+      setTimeout(() => {
+        scoreCircle.style.strokeDashoffset = offset;
+      }, 200);
 
-            // Section Test
-            initTestSection();
+      animateValue(document.getElementById('score-value'), 0, testData.score, 1000);
 
-            // Section Épargne
-            initSavingsSection();
-        }
+      // Infos
+      document.getElementById('test-title').textContent = testData.titre;
+      document.getElementById('test-description').textContent = testData.description;
+      document.getElementById('test-date').textContent = 'Dernier test : ' + testData.date;
+    }
 
-        function initTestSection() {
-            // Score circulaire
-            const circumference = 2 * Math.PI * 40;
-            const offset = circumference - (testData.score / 100) * circumference;
-            const scoreCircle = document.getElementById('score-circle');
-            
-            setTimeout(() => {
-                scoreCircle.style.strokeDashoffset = offset;
-            }, 200);
+    function initSavingsSection() {
+      const progressPercent = Math.round((financialData.epargneActuelle / financialData.objectifEpargne) * 100);
+      const restant = financialData.objectifEpargne - financialData.epargneActuelle;
 
-            animateValue(document.getElementById('score-value'), 0, testData.score, 1000);
+      document.getElementById('objectif-montant').textContent = formatMoney(financialData.objectifEpargne);
 
-            // Infos
-            document.getElementById('test-title').textContent = testData.titre;
-            document.getElementById('test-description').textContent = testData.description;
-            document.getElementById('test-date').textContent = 'Dernier test : ' + testData.date;
-        }
+      animateValue(document.getElementById('epargne-actuelle'), 0, financialData.epargneActuelle, 800, formatMoney);
+      document.getElementById('epargne-restante').textContent = formatMoney(restant);
+      document.getElementById('epargne-mensuelle').textContent = formatMoney(financialData.epargneMensuelleConseillee);
 
-        function initSavingsSection() {
-            const progressPercent = Math.round((financialData.epargneActuelle / financialData.objectifEpargne) * 100);
-            const restant = financialData.objectifEpargne - financialData.epargneActuelle;
+      // Barre de progression
+      setTimeout(() => {
+        document.getElementById('progress-fill').style.width = progressPercent + '%';
+      }, 200);
 
-            document.getElementById('objectif-montant').textContent = formatMoney(financialData.objectifEpargne);
-            
-            animateValue(document.getElementById('epargne-actuelle'), 0, financialData.epargneActuelle, 800, formatMoney);
-            document.getElementById('epargne-restante').textContent = formatMoney(restant);
-            document.getElementById('epargne-mensuelle').textContent = formatMoney(financialData.epargneMensuelleConseillee);
+      animateValue(document.getElementById('progress-percent'), 0, progressPercent, 800, v => v + '%');
+    }
 
-            // Barre de progression
-            setTimeout(() => {
-                document.getElementById('progress-fill').style.width = progressPercent + '%';
-            }, 200);
+    // ============================================
+    // MENU MOBILE (corrigé)
+    // ============================================
+    function toggleMenu() {
+      const nav = document.getElementById('nav');
+      const btn = document.querySelector('.menu-toggle');
+      const isOpen = nav.classList.toggle('open');
+      if (btn) btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    }
 
-            animateValue(document.getElementById('progress-percent'), 0, progressPercent, 800, v => v + '%');
-        }
+    // Fermer le menu si on clique à l'extérieur (mobile)
+    document.addEventListener('click', (e) => {
+      const nav = document.getElementById('nav');
+      const btn = document.querySelector('.menu-toggle');
+      if (!nav || !btn) return;
 
-        // Menu mobile
-        function toggleMenu() {
-            document.getElementById('nav').classList.toggle('open');
-        }
+      const clickedInside = nav.contains(e.target) || btn.contains(e.target);
+      if (!clickedInside && nav.classList.contains('open')) {
+        nav.classList.remove('open');
+        btn.setAttribute('aria-expanded', 'false');
+      }
+    });
 
-        // Démarrer
-        document.addEventListener('DOMContentLoaded', initDashboard);
-    </script>
+    // Démarrer
+    document.addEventListener('DOMContentLoaded', initDashboard);
+  </script>
 </body>
 </html>
