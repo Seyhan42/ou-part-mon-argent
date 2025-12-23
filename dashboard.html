@@ -13,28 +13,33 @@
 </head>
 
 <body>
- <header class="site-header">
-  <div class="container header-inner">
-    <a class="brand" href="/index.html">
-      <span class="brand-icon">€</span>
-      <span class="brand-title">Où part mon argent ?</span>
-      <span class="brand-subtitle">Clarté • Épargne • Décisions</span>
+<header class="site-header">
+  <div class="site-header-inner">
+    <a href="/index.html" class="site-logo">
+      <span class="logo-icon">€</span>
+      <div class="logo-text">
+        <strong>Où part mon argent ?</strong>
+        <small>Clarté • Épargne • Décisions</small>
+      </div>
     </a>
 
-    <nav class="nav-links">
+    <nav class="site-nav">
       <a href="/index.html">Accueil</a>
       <a href="/test.html">Test gratuit</a>
       <a href="/tarifs.html">Tarifs</a>
 
-      <!-- visible si déconnecté -->
+      <!-- Déconnecté -->
       <a href="/login.html" data-auth="logged-out">Connexion</a>
 
-      <!-- visible si connecté -->
+      <!-- Connecté -->
       <a href="/dashboard.html" data-auth="logged-in" class="active">Dashboard</a>
-      <a href="#" data-auth="logged-in" data-action="logout">Déconnexion</a>
+      <a href="#" data-auth="logged-in" data-action="logout" class="btn-logout">
+        Déconnexion
+      </a>
     </nav>
   </div>
 </header>
+
 
   <!-- ========================================
        CONTENU PRINCIPAL
