@@ -314,20 +314,214 @@
     }
     
     @media (max-width: 768px) {
-      .dashboard-layout { flex-direction: column; }
+      .dashboard-layout { 
+        flex-direction: column; 
+      }
+      
+      /* ===== SIDEBAR MOBILE - Menu horizontal scrollable ===== */
       .sidebar { 
         width: 100%; 
         border-right: none; 
         border-bottom: 1px solid var(--border-light);
+        padding: var(--space-sm) var(--space-md);
+        position: sticky;
+        top: 0;
+        background: var(--bg-card);
+        z-index: 100;
+      }
+      
+      .plan-card {
+        display: none; /* Cacher le plan card sur mobile */
+      }
+      
+      .sidebar-section {
+        margin-bottom: 0;
+      }
+      
+      .sidebar-section:first-of-type {
+        display: none; /* Cacher la première section (plan) */
+      }
+      
+      .sidebar-title { 
+        display: none; 
+      }
+      
+      .sidebar-menu { 
+        display: flex; 
+        flex-wrap: nowrap;
+        gap: var(--space-xs); 
+        overflow-x: auto;
+        padding-bottom: var(--space-xs);
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+      }
+      
+      .sidebar-menu::-webkit-scrollbar {
+        display: none;
+      }
+      
+      .sidebar-item { 
+        margin: 0;
+        flex-shrink: 0;
+      }
+      
+      .sidebar-link {
+        padding: 8px 12px;
+        font-size: 12px;
+        white-space: nowrap;
+        border-radius: var(--radius-full);
+        background: var(--bg-subtle);
+      }
+      
+      .sidebar-link.active {
+        background: var(--accent);
+        color: white;
+      }
+      
+      .sidebar-icon {
+        font-size: 14px;
+        width: auto;
+      }
+      
+      .sidebar-badge {
+        font-size: 8px;
+        padding: 2px 4px;
+      }
+      
+      /* ===== MAIN CONTENT MOBILE ===== */
+      .dashboard-main { 
+        padding: var(--space-md); 
+      }
+      
+      .page-header {
+        margin-bottom: var(--space-md);
+      }
+      
+      .page-title {
+        font-size: var(--text-xl);
+      }
+      
+      .page-subtitle {
+        font-size: var(--text-xs);
+      }
+      
+      /* ===== GRIDS MOBILE ===== */
+      .grid-4 { 
+        grid-template-columns: repeat(2, 1fr); 
+        gap: var(--space-sm);
+      }
+      
+      .grid-2 { 
+        grid-template-columns: 1fr; 
+        gap: var(--space-md);
+        margin-top: var(--space-md);
+      }
+      
+      /* ===== STAT CARDS MOBILE ===== */
+      .stat-card {
         padding: var(--space-md);
       }
-      .sidebar-menu { display: flex; flex-wrap: wrap; gap: var(--space-xs); }
-      .sidebar-item { margin: 0; }
-      .sidebar-section { margin-bottom: var(--space-md); }
-      .sidebar-title { display: none; }
-      .grid-4 { grid-template-columns: 1fr; }
-      .grid-2 { grid-template-columns: 1fr; }
-      .dashboard-main { padding: var(--space-lg); }
+      
+      .stat-label {
+        font-size: 9px;
+      }
+      
+      .stat-value {
+        font-size: var(--text-lg);
+      }
+      
+      .stat-icon {
+        width: 28px;
+        height: 28px;
+        font-size: 14px;
+      }
+      
+      /* ===== CARDS MOBILE ===== */
+      .card {
+        padding: var(--space-md);
+      }
+      
+      .card h3 {
+        font-size: var(--text-base);
+      }
+      
+      /* ===== SCORE CIRCLE MOBILE ===== */
+      #score-circle {
+        /* Rendre le cercle plus petit sur mobile */
+      }
+      
+      /* ===== BUTTONS MOBILE ===== */
+      .cta-row {
+        flex-direction: column;
+        gap: var(--space-sm);
+      }
+      
+      .cta-row .btn {
+        width: 100%;
+        text-align: center;
+      }
+      
+      /* ===== LOCKED OVERLAY MOBILE ===== */
+      .locked-overlay {
+        padding: var(--space-xl) var(--space-md);
+      }
+      
+      .locked-icon {
+        font-size: 36px;
+      }
+      
+      .locked-title {
+        font-size: var(--text-base);
+      }
+      
+      /* ===== TABLE MOBILE ===== */
+      #historique-table td,
+      #historique-table th {
+        padding: var(--space-xs);
+        font-size: 11px;
+      }
+      
+      /* ===== MODAL MOBILE ===== */
+      .modal-content {
+        margin: var(--space-md);
+        padding: var(--space-lg);
+        max-height: calc(100vh - 40px);
+      }
+    }
+    
+    /* ===== TRÈS PETIT ÉCRAN (< 400px) ===== */
+    @media (max-width: 400px) {
+      .grid-4 { 
+        grid-template-columns: 1fr 1fr;
+        gap: var(--space-xs);
+      }
+      
+      .stat-card {
+        padding: var(--space-sm);
+      }
+      
+      .stat-value {
+        font-size: var(--text-base);
+      }
+      
+      .stat-label {
+        font-size: 8px;
+      }
+      
+      .stat-icon {
+        width: 24px;
+        height: 24px;
+        font-size: 12px;
+      }
+      
+      .sidebar-link {
+        padding: 6px 10px;
+        font-size: 11px;
+      }
+      
+      .sidebar-icon {
+        display: none; /* Cacher les icônes sur très petit écran */
+      }
     }
   </style>
 </head>
