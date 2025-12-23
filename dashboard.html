@@ -585,14 +585,19 @@
                 <span></span>
             </button>
 
-            <nav class="nav" id="nav">
-                <a href="/index.html" class="nav-link">Accueil</a>
-                <a href="/test.html" class="nav-link">Test gratuit</a>
-                <a href="/tarifs.html" class="nav-link">Tarifs</a>
-                <a href="/dashboard.html" class="nav-link active" data-auth="logged-in">Dashboard</a>
-                <a href="/login.html" class="nav-btn" data-auth="logged-out">Connexion</a>
-                <button class="nav-btn outline" data-auth="logged-in" data-action="logout">Déconnexion</button>
-            </nav>
+            <nav class="top-nav">
+  <a href="/index.html">Accueil</a>
+  <a href="/test.html">Test gratuit</a>
+  <a href="/tarifs.html">Tarifs</a>
+
+  <!-- Visible seulement si déconnecté -->
+  <a href="/login.html" data-auth="logged-out">Connexion</a>
+
+  <!-- Visible seulement si connecté -->
+  <a href="/dashboard.html" data-auth="logged-in">Dashboard</a>
+  <a href="#" data-auth="logged-in" data-action="logout">Déconnexion</a>
+</nav>
+
         </div>
     </header>
 
