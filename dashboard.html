@@ -1,140 +1,726 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Dashboard — Où part mon argent</title>
- <link rel="stylesheet" href="/css/style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Financier | MonBudget</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0f0f13;
+            --bg-secondary: #1a1a23;
+            --bg-card: #22222e;
+            --bg-card-hover: #2a2a38;
+            --accent-primary: #6366f1;
+            --accent-secondary: #818cf8;
+            --accent-success: #10b981;
+            --accent-warning: #f59e0b;
+            --accent-danger: #ef4444;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --border-color: #2e2e3e;
+            --shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .dashboard {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .header h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .date-badge {
+            background: var(--bg-card);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        /* Grids */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+        }
+
+        .grid-4 {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 1200px) {
+            .grid-4 { grid-template-columns: repeat(2, 1fr); }
+            .grid-3 { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 768px) {
+            .grid-4, .grid-3, .grid-2 { grid-template-columns: 1fr; }
+            .dashboard { padding: 1rem; }
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            background: var(--bg-card-hover);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .card-title {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+
+        .card-icon.green { background: rgba(16, 185, 129, 0.15); color: var(--accent-success); }
+        .card-icon.red { background: rgba(239, 68, 68, 0.15); color: var(--accent-danger); }
+        .card-icon.orange { background: rgba(245, 158, 11, 0.15); color: var(--accent-warning); }
+        .card-icon.purple { background: rgba(99, 102, 241, 0.15); color: var(--accent-primary); }
+
+        .card-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-change {
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .card-change.positive { color: var(--accent-success); }
+        .card-change.negative { color: var(--accent-danger); }
+
+        /* Section Titles */
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 2.5rem 0 1.25rem;
+            color: var(--text-primary);
+        }
+
+        /* Large Card */
+        .card-large {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 2rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .card-large .card-header {
+            margin-bottom: 1.5rem;
+        }
+
+        .card-large .card-title {
+            font-size: 1.125rem;
+            color: var(--text-primary);
+            text-transform: none;
+            letter-spacing: 0;
+        }
+
+        /* Test Summary */
+        .test-summary {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .test-score {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            flex-shrink: 0;
+        }
+
+        .test-score svg {
+            transform: rotate(-90deg);
+        }
+
+        .test-score-circle-bg {
+            fill: none;
+            stroke: var(--bg-secondary);
+            stroke-width: 8;
+        }
+
+        .test-score-circle {
+            fill: none;
+            stroke: url(#gradient);
+            stroke-width: 8;
+            stroke-linecap: round;
+            stroke-dasharray: 283;
+            stroke-dashoffset: 57;
+            transition: stroke-dashoffset 1s ease;
+        }
+
+        .test-score-value {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        .test-score-value span {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .test-score-value small {
+            display: block;
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+        }
+
+        .test-details {
+            flex: 1;
+        }
+
+        .test-details h4 {
+            font-size: 1.125rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .test-details p {
+            color: var(--text-secondary);
+            font-size: 0.9375rem;
+            margin-bottom: 1rem;
+        }
+
+        .test-badges {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            padding: 0.375rem 0.875rem;
+            border-radius: 20px;
+            font-size: 0.8125rem;
+            font-weight: 500;
+        }
+
+        .badge.success { background: rgba(16, 185, 129, 0.15); color: var(--accent-success); }
+        .badge.warning { background: rgba(245, 158, 11, 0.15); color: var(--accent-warning); }
+        .badge.danger { background: rgba(239, 68, 68, 0.15); color: var(--accent-danger); }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
+            font-size: 0.9375rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-card-hover);
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            margin-top: 1.5rem;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.75rem;
+        }
+
+        .progress-label {
+            font-size: 0.9375rem;
+            color: var(--text-secondary);
+        }
+
+        .progress-value {
+            font-size: 0.9375rem;
+            font-weight: 600;
+        }
+
+        .progress-bar {
+            height: 12px;
+            background: var(--bg-secondary);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-success));
+            border-radius: 6px;
+            transition: width 1s ease;
+        }
+
+        .savings-info {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .savings-stat {
+            text-align: center;
+        }
+
+        .savings-stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent-success);
+        }
+
+        .savings-stat-label {
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+
+        /* Status indicator */
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 0.5rem;
+        }
+
+        .status-dot.active { background: var(--accent-success); }
+        .status-dot.warning { background: var(--accent-warning); }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+    </style>
 </head>
-  <script src="/assets/nav-auth.js"></script>
 <body>
-  <header class="site-header">
-    <div class="brand">
-      <div class="logo">€</div>
-      <div>
-        <div class="brand-title">Dashboard</div>
-        <div class="brand-subtitle" id="userEmail">—</div>
-      </div>
+    <div class="dashboard">
+        <!-- Header -->
+        <header class="header">
+            <h1>💰 MonBudget</h1>
+            <div class="header-info">
+                <div class="date-badge" id="current-date"></div>
+                <div class="avatar">JD</div>
+            </div>
+        </header>
+
+        <!-- Section 1: Résumé Financier -->
+        <h2 class="section-title">📊 Résumé Financier</h2>
+        <div class="grid-4">
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Revenus</span>
+                    <div class="card-icon green">💵</div>
+                </div>
+                <div class="card-value" id="revenus">0 €</div>
+                <div class="card-change positive">
+                    <span>↑ 5.2%</span> vs mois dernier
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Dépenses Essentielles</span>
+                    <div class="card-icon red">🏠</div>
+                </div>
+                <div class="card-value" id="depenses-essentielles">0 €</div>
+                <div class="card-change negative">
+                    <span>↑ 2.1%</span> vs mois dernier
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Dépenses Non Essentielles</span>
+                    <div class="card-icon orange">🛍️</div>
+                </div>
+                <div class="card-value" id="depenses-non-essentielles">0 €</div>
+                <div class="card-change positive">
+                    <span>↓ 8.4%</span> vs mois dernier
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Reste à Vivre</span>
+                    <div class="card-icon purple">✨</div>
+                </div>
+                <div class="card-value" id="reste-a-vivre">0 €</div>
+                <div class="card-change positive">
+                    <span>↑ 12.3%</span> vs mois dernier
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 2 & 3: Grid Layout -->
+        <div class="grid-2" style="margin-top: 1.5rem;">
+            
+            <!-- Section 2: Dernier Test -->
+            <div class="card-large">
+                <div class="card-header">
+                    <h3 class="card-title">🎯 Dernier Test Financier</h3>
+                    <span class="date-badge">
+                        <span class="status-dot active"></span>
+                        <span id="test-date">--</span>
+                    </span>
+                </div>
+                
+                <div class="test-summary">
+                    <div class="test-score">
+                        <svg width="120" height="120" viewBox="0 0 120 120">
+                            <defs>
+                                <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%" stop-color="#6366f1"/>
+                                    <stop offset="100%" stop-color="#10b981"/>
+                                </linearGradient>
+                            </defs>
+                            <circle class="test-score-circle-bg" cx="60" cy="60" r="45"/>
+                            <circle class="test-score-circle" id="score-circle" cx="60" cy="60" r="45"/>
+                        </svg>
+                        <div class="test-score-value">
+                            <span id="score-value">0</span>
+                            <small>/100</small>
+                        </div>
+                    </div>
+                    
+                    <div class="test-details">
+                        <h4 id="test-title">Chargement...</h4>
+                        <p id="test-description">Analyse de votre santé financière en cours...</p>
+                        <div class="test-badges">
+                            <span class="badge success" id="badge-1">--</span>
+                            <span class="badge warning" id="badge-2">--</span>
+                            <span class="badge danger" id="badge-3">--</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="quick-actions">
+                    <button class="btn btn-primary" onclick="refaireTest()">
+                        🔄 Refaire un test
+                    </button>
+                    <button class="btn btn-secondary">
+                        📄 Voir le rapport complet
+                    </button>
+                </div>
+            </div>
+
+            <!-- Section 3: Objectif d'Épargne -->
+            <div class="card-large">
+                <div class="card-header">
+                    <h3 class="card-title">🎯 Objectif d'Épargne</h3>
+                    <span class="date-badge">
+                        <span class="status-dot warning"></span>
+                        En cours
+                    </span>
+                </div>
+                
+                <div style="margin-bottom: 1rem;">
+                    <span style="color: var(--text-secondary); font-size: 0.9375rem;">Objectif : </span>
+                    <span style="font-size: 1.75rem; font-weight: 700;" id="objectif-montant">0 €</span>
+                </div>
+                
+                <div class="progress-container">
+                    <div class="progress-header">
+                        <span class="progress-label">Progression</span>
+                        <span class="progress-value" id="progress-percent">0%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+                    </div>
+                </div>
+                
+                <div class="savings-info">
+                    <div class="savings-stat">
+                        <div class="savings-stat-value" id="epargne-actuelle">0 €</div>
+                        <div class="savings-stat-label">Épargné</div>
+                    </div>
+                    <div class="savings-stat">
+                        <div class="savings-stat-value" id="epargne-restante" style="color: var(--accent-warning);">0 €</div>
+                        <div class="savings-stat-label">Restant</div>
+                    </div>
+                    <div class="savings-stat">
+                        <div class="savings-stat-value" id="epargne-mensuelle" style="color: var(--accent-primary);">0 €</div>
+                        <div class="savings-stat-label">/ mois conseillé</div>
+                    </div>
+                </div>
+                
+                <div class="quick-actions">
+                    <button class="btn btn-primary">
+                        ➕ Ajouter un versement
+                    </button>
+                    <button class="btn btn-secondary">
+                        ⚙️ Modifier l'objectif
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
-   <nav class="nav">
-  <a class="nav-link" href="/index.html">Accueil</a>
-  <a class="nav-link" href="/test.html">Test gratuit</a>
-  <a class="nav-link" href="/tarifs.html">Tarifs</a>
+    <script>
+        // ============================================
+        // DONNÉES EXEMPLES (simulées)
+        // ============================================
+        const financialData = {
+            revenus: 3850,
+            depensesEssentielles: 1920,
+            depensesNonEssentielles: 580,
+            resteAVivre: 1350,
+            objectifEpargne: 15000,
+            epargneActuelle: 9750,
+            epargneMensuelleConseillée: 450
+        };
 
-  <!-- Visible si PAS connecté -->
-  <a class="nav-link" href="/login.html" data-auth="out">Connexion</a>
+        const testData = {
+            score: 80,
+            date: new Date(2024, 11, 18), // 18 décembre 2024
+            titre: "Bonne santé financière",
+            description: "Votre gestion budgétaire est solide. Quelques ajustements sur les dépenses loisirs pourraient optimiser votre épargne.",
+            points: {
+                positif: "Épargne régulière",
+                attention: "Loisirs élevés",
+                ameliorer: "Fonds d'urgence"
+            }
+        };
 
-  <!-- Visible si connecté -->
-  <a class="nav-link" href="/dashboard.html" data-auth="in">Dashboard</a>
-  <button class="btn-ghost" type="button" data-auth="in" data-logout>
-    Déconnexion
-  </button>
-</nav>
+        // ============================================
+        // FONCTIONS UTILITAIRES
+        // ============================================
+        function formatMoney(amount) {
+            return new Intl.NumberFormat('fr-FR', {
+                style: 'currency',
+                currency: 'EUR',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(amount);
+        }
 
+        function formatDate(date) {
+            return new Intl.DateTimeFormat('fr-FR', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric'
+            }).format(date);
+        }
 
-  </header>
+        function animateValue(element, start, end, duration, formatter = (v) => v) {
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                const value = Math.floor(progress * (end - start) + start);
+                element.textContent = formatter(value);
+                if (progress < 1) {
+                    window.requestAnimationFrame(step);
+                }
+            };
+            window.requestAnimationFrame(step);
+        }
 
-  <main class="container">
-    <section class="hero compact">
-      <h1 style="font-size:2rem;">Ton espace</h1>
-      <p class="lead" style="max-width:700px;">
-        Ici tu retrouveras tes résultats sauvegardés, tes objectifs et ton suivi.
-      </p>
-    </section>
+        // ============================================
+        // INITIALISATION DU DASHBOARD
+        // ============================================
+        function initDashboard() {
+            // Date actuelle
+            document.getElementById('current-date').textContent = formatDate(new Date());
 
-    <section class="grid-3">
-      <div class="card">
-        <h2>Résumé</h2>
-        <p class="small muted">Dernier calcul enregistré</p>
-        <div class="divider"></div>
+            // Animation des valeurs financières
+            animateValue(
+                document.getElementById('revenus'), 
+                0, financialData.revenus, 1000, formatMoney
+            );
+            animateValue(
+                document.getElementById('depenses-essentielles'), 
+                0, financialData.depensesEssentielles, 1000, formatMoney
+            );
+            animateValue(
+                document.getElementById('depenses-non-essentielles'), 
+                0, financialData.depensesNonEssentielles, 1000, formatMoney
+            );
+            animateValue(
+                document.getElementById('reste-a-vivre'), 
+                0, financialData.resteAVivre, 1000, formatMoney
+            );
 
-        <div class="mini-grid">
-          <div class="mini-card">
-            <div class="mini-title">Minimum vital / mois</div>
-            <div class="mini-value" id="mvMonth">—</div>
-          </div>
-          <div class="mini-card">
-            <div class="mini-title">Minimum vital / semaine</div>
-            <div class="mini-value" id="mvWeek">—</div>
-          </div>
-          <div class="mini-card">
-            <div class="mini-title">Reste à vivre / mois</div>
-            <div class="mini-value" id="ravMonth">—</div>
-          </div>
-        </div>
-      </div>
+            // Test financier
+            initTestSection();
 
-      <div class="card">
-        <h2>Objectif épargne</h2>
-        <p class="small muted">Paramètres rapides</p>
-        <div class="divider"></div>
+            // Objectif d'épargne
+            initSavingsSection();
+        }
 
-        <div class="form">
-          <div class="field">
-            <label for="goal">Objectif (€)</label>
-            <input id="goal" type="number" min="0" placeholder="10000" />
-          </div>
-          <div class="field">
-            <label for="perWeek">Épargne / semaine (€)</label>
-            <input id="perWeek" type="number" min="0" placeholder="50" />
-          </div>
-          <button class="btn full" id="saveGoal" type="button">Enregistrer</button>
-          <p class="small" id="goalMsg"></p>
-        </div>
-      </div>
+        function initTestSection() {
+            // Score
+            const scoreCircle = document.getElementById('score-circle');
+            const circumference = 2 * Math.PI * 45;
+            const offset = circumference - (testData.score / 100) * circumference;
+            
+            setTimeout(() => {
+                scoreCircle.style.strokeDashoffset = offset;
+            }, 300);
 
-      <div class="card callout">
-        <h2>Actions</h2>
-        <ul class="list">
-          <li>Refaire une estimation</li>
-          <li>Comparer des décisions</li>
-          <li>Suivi semaine/mois</li>
-        </ul>
-        <a class="btn full" href="test.html">Faire un test</a>
-        <a class="btn btn-ghost full" href="tarifs.html">Voir les offres</a>
-      </div>
-    </section>
-  </main>
+            animateValue(
+                document.getElementById('score-value'), 
+                0, testData.score, 1500
+            );
 
-  <footer class="footer">© 2025 Où part mon argent</footer>
+            // Infos du test
+            document.getElementById('test-date').textContent = formatDate(testData.date);
+            document.getElementById('test-title').textContent = testData.titre;
+            document.getElementById('test-description').textContent = testData.description;
+            document.getElementById('badge-1').textContent = testData.points.positif;
+            document.getElementById('badge-2').textContent = testData.points.attention;
+            document.getElementById('badge-3').textContent = testData.points.ameliorer;
+        }
 
-  <script src="assets/auth.js"></script>
-  <script>
-    // PROTECTION
-    requireAuth("login.html");
+        function initSavingsSection() {
+            const progressPercent = Math.round(
+                (financialData.epargneActuelle / financialData.objectifEpargne) * 100
+            );
+            const restant = financialData.objectifEpargne - financialData.epargneActuelle;
 
-    // UI user
-    document.getElementById("userEmail").textContent = currentUserEmail();
+            document.getElementById('objectif-montant').textContent = formatMoney(financialData.objectifEpargne);
+            
+            animateValue(
+                document.getElementById('epargne-actuelle'), 
+                0, financialData.epargneActuelle, 1200, formatMoney
+            );
+            
+            document.getElementById('epargne-restante').textContent = formatMoney(restant);
+            document.getElementById('epargne-mensuelle').textContent = formatMoney(financialData.epargneMensuelleConseillée);
 
-    document.getElementById("logoutBtn").addEventListener("click", () => {
-      logout("login.html");
-    });
+            // Animation de la barre de progression
+            setTimeout(() => {
+                document.getElementById('progress-fill').style.width = progressPercent + '%';
+            }, 300);
 
-    // --- Stockage dashboard (par utilisateur)
-    function keyForUser(suffix) {
-      return `user_${currentUserEmail()}_${suffix}`;
-    }
+            animateValue(
+                document.getElementById('progress-percent'), 
+                0, progressPercent, 1200, (v) => v + '%'
+            );
+        }
 
-    // Load last result (si tu sauvegardes depuis test.html plus tard)
-    document.getElementById("mvMonth").textContent = localStorage.getItem(keyForUser("mv_month")) || "—";
-    document.getElementById("mvWeek").textContent  = localStorage.getItem(keyForUser("mv_week")) || "—";
-    document.getElementById("ravMonth").textContent = localStorage.getItem(keyForUser("rav_month")) || "—";
+        // ============================================
+        // ACTIONS
+        // ============================================
+        function refaireTest() {
+            // Simulation d'un nouveau test
+            alert('🔄 Redirection vers le questionnaire financier...\n\nCette fonctionnalité nécessite un backend.');
+        }
 
-    // Goal save/load
-    const goal = document.getElementById("goal");
-    const perWeek = document.getElementById("perWeek");
-    const goalMsg = document.getElementById("goalMsg");
-
-    goal.value = localStorage.getItem(keyForUser("goal")) || "";
-    perWeek.value = localStorage.getItem(keyForUser("per_week")) || "";
-
-    document.getElementById("saveGoal").addEventListener("click", () => {
-      localStorage.setItem(keyForUser("goal"), goal.value.trim());
-      localStorage.setItem(keyForUser("per_week"), perWeek.value.trim());
-      goalMsg.textContent = "Enregistré ✅";
-      setTimeout(()=> goalMsg.textContent = "", 1500);
-    });
-  </script>
+        // ============================================
+        // DÉMARRAGE
+        // ============================================
+        document.addEventListener('DOMContentLoaded', initDashboard);
+    </script>
 </body>
 </html>
