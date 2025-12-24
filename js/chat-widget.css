@@ -1,1 +1,269 @@
-w
+// ============================================
+// CHAT-WIDGET.JS - Widget Chat Assistant
+// ============================================
+
+(function() {
+  'use strict';
+
+  // Configuration
+  var CHAT_HISTORY_KEY = 'chatHistory';
+  var PLAN_KEY = 'plan';
+
+  // Réponses mock
+  var BOT_RESPONSES = {
+    greetings: [
+      "Bonjour ! Je suis votre assistant budget. Comment puis-je vous aider ?",
+      "Salut ! Besoin d'aide pour gérer votre budget ?",
+      "Hello ! Je suis là pour vous aider avec vos finances."
+    ],
+    epargne: [
+      "Pour épargner efficacement, commencez par définir un objectif clair (ex: 10 000€ pour une voiture). Ensuite, calculez combien mettre de côté chaque mois.",
+      "La règle des 50/30/20 peut vous aider : 50% pour les besoins, 30% pour les envies, 20% pour l'épargne."
+    ],
+    budget: [
+      "Votre budget devrait inclure : revenus - dépenses essentielles (loyer, courses) - dépenses variables = reste à vivre.",
+      "Faites un test budgétaire pour voir où vous en êtes. C'est gratuit !"
+    ],
+    fuites: [
+      "Les fuites budgétaires sont les petites dépenses qui s'accumulent : abonnements oubliés, achats impulsifs...",
+      "Vérifiez vos relevés bancaires pour identifier les prélèvements automatiques inutiles."
+    ],
+    default: [
+      "Je peux vous aider sur : l'épargne, le budget, les fuites budgétaires, ou les décisions financières.",
+      "Posez-moi une question sur votre budget ou tapez 'aide' pour voir ce que je peux faire.",
+      "Je suis un assistant simple. Pour des conseils personnalisés, consultez un professionnel."
+    ]
+  };
+
+  // Utilitaires
+  function getPlan() {
+    try {
+      return JSON.parse(localStorage.getItem(PLAN_KEY)) || 'free';
+    } catch(e) {
+      return 'free';
+    }
+  }
+
+  function getHistory() {
+    try {
+      return JSON.parse(localStorage.getItem(CHAT_HISTORY_KEY)) || [];
+    } catch(e) {
+      return [];
+    }
+  }
+
+  function saveHistory(history) {
+    localStorage.setItem(CHAT_HISTORY_KEY, JSON.stringify(history));
+  }
+
+  function randomResponse(arr) {
+    return arr[Math.floor(Math.random() * arr.length)];
+  }
+
+  function getBotResponse(message) {
+    var msg = message.toLowerCase();
+    
+    if (msg.match(/bonjour|salut|hello|hi|hey/)) {
+      return randomResponse(BOT_RESPONSES.greetings);
+    }
+    if (msg.match(/épargne|epargne|économie|economie|économiser|economiser|mettre de côté/)) {
+      return randomResponse(BOT_RESPONSES.epargne);
+    }
+    if (msg.match(/budget|dépense|depense|argent|revenu|reste à vivre/)) {
+      return randomResponse(BOT_RESPONSES.budget);
+    }
+    if (msg.match(/fuite|abonnement|gaspill/)) {
+      return randomResponse(BOT_RESPONSES.fuites);
+    }
+    if (msg.match(/aide|help|quoi faire/)) {
+      return "Je peux vous aider avec :\n• 💰 Questions sur l'épargne\n• 📊 Conseils budget\n• 💸 Identifier les fuites\n• ⚖️ Décisions financières\n\nQue souhaitez-vous savoir ?";
+    }
+    
+    return randomResponse(BOT_RESPONSES.default);
+  }
+
+  // Créer le widget
+  function createWidget() {
+    // Bouton flottant
+    var btn = document.createElement('button');
+    btn.className = 'chat-widget-btn';
+    btn.innerHTML = '💬';
+    btn.setAttribute('aria-label', 'Ouvrir le chat');
+    btn.id = 'chat-widget-btn';
+
+    // Fenêtre chat
+    var win = document.createElement('div');
+    win.className = 'chat-window';
+    win.id = 'chat-window';
+
+    var plan = getPlan();
+    var hasAccess = (plan === 'complete');
+
+    if (hasAccess) {
+      win.innerHTML = 
+        '<div class="chat-header">' +
+          '<div class="chat-header-title">' +
+            '<span>🤖</span>' +
+            '<div><h3>Assistant Budget</h3><small>En ligne</small></div>' +
+          '</div>' +
+          '<button class="chat-close" id="chat-close">✕</button>' +
+        '</div>' +
+        '<div class="chat-messages" id="chat-messages"></div>' +
+        '<div class="chat-input-area">' +
+          '<div class="chat-input-row">' +
+            '<input type="text" class="chat-input" id="chat-input" placeholder="Posez votre question...">' +
+            '<button class="chat-send" id="chat-send">➤</button>' +
+          '</div>' +
+          '<div class="chat-actions">' +
+            '<button class="chat-clear" id="chat-clear">🗑️ Effacer conversation</button>' +
+          '</div>' +
+        '</div>';
+    } else {
+      win.innerHTML = 
+        '<div class="chat-header">' +
+          '<div class="chat-header-title">' +
+            '<span>🤖</span>' +
+            '<div><h3>Assistant Budget</h3><small>Premium</small></div>' +
+          '</div>' +
+          '<button class="chat-close" id="chat-close">✕</button>' +
+        '</div>' +
+        '<div class="chat-locked">' +
+          '<div class="chat-locked-icon">🔒</div>' +
+          '<div class="chat-locked-title">Fonctionnalité Premium</div>' +
+          '<div class="chat-locked-desc">L\'assistant budget est disponible avec le plan Complet.</div>' +
+          '<a href="tarifs.html" class="btn btn-primary">Voir les offres</a>' +
+        '</div>';
+    }
+
+    document.body.appendChild(btn);
+    document.body.appendChild(win);
+
+    // Events
+    btn.addEventListener('click', function() {
+      win.classList.toggle('open');
+      if (win.classList.contains('open') && hasAccess) {
+        loadHistory();
+        document.getElementById('chat-input').focus();
+      }
+    });
+
+    var closeBtn = document.getElementById('chat-close');
+    if (closeBtn) {
+      closeBtn.addEventListener('click', function() {
+        win.classList.remove('open');
+      });
+    }
+
+    if (hasAccess) {
+      var input = document.getElementById('chat-input');
+      var sendBtn = document.getElementById('chat-send');
+      var clearBtn = document.getElementById('chat-clear');
+
+      sendBtn.addEventListener('click', sendMessage);
+      input.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') sendMessage();
+      });
+
+      clearBtn.addEventListener('click', function() {
+        if (confirm('Effacer toute la conversation ?')) {
+          saveHistory([]);
+          document.getElementById('chat-messages').innerHTML = '';
+          addBotMessage("Conversation effacée. Comment puis-je vous aider ?");
+        }
+      });
+
+      // Message initial si historique vide
+      var history = getHistory();
+      if (history.length === 0) {
+        setTimeout(function() {
+          addBotMessage("Bonjour ! Je suis votre assistant budget. Comment puis-je vous aider ?");
+        }, 500);
+      }
+    }
+  }
+
+  function loadHistory() {
+    var container = document.getElementById('chat-messages');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    var history = getHistory();
+    
+    history.forEach(function(msg) {
+      var div = document.createElement('div');
+      div.className = 'chat-message ' + msg.type;
+      div.textContent = msg.text;
+      container.appendChild(div);
+    });
+
+    container.scrollTop = container.scrollHeight;
+  }
+
+  function addMessage(text, type) {
+    var container = document.getElementById('chat-messages');
+    if (!container) return;
+
+    var div = document.createElement('div');
+    div.className = 'chat-message ' + type;
+    div.textContent = text;
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+
+    // Sauvegarder
+    var history = getHistory();
+    history.push({ type: type, text: text, time: Date.now() });
+    // Garder max 100 messages
+    if (history.length > 100) history = history.slice(-100);
+    saveHistory(history);
+  }
+
+  function addBotMessage(text) {
+    addMessage(text, 'bot');
+  }
+
+  function addUserMessage(text) {
+    addMessage(text, 'user');
+  }
+
+  function showTyping() {
+    var container = document.getElementById('chat-messages');
+    if (!container) return;
+
+    var typing = document.createElement('div');
+    typing.className = 'typing-indicator';
+    typing.id = 'typing-indicator';
+    typing.innerHTML = '<span></span><span></span><span></span>';
+    container.appendChild(typing);
+    container.scrollTop = container.scrollHeight;
+  }
+
+  function hideTyping() {
+    var typing = document.getElementById('typing-indicator');
+    if (typing) typing.remove();
+  }
+
+  function sendMessage() {
+    var input = document.getElementById('chat-input');
+    var text = input.value.trim();
+    
+    if (!text) return;
+
+    addUserMessage(text);
+    input.value = '';
+
+    // Simuler délai de réponse
+    showTyping();
+    setTimeout(function() {
+      hideTyping();
+      var response = getBotResponse(text);
+      addBotMessage(response);
+    }, 800 + Math.random() * 700);
+  }
+
+  // Initialiser au chargement
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', createWidget);
+  } else {
+    createWidget();
+  }
+})();
