@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Test gratuit — Où part mon argent ?</title>
   <meta name="description" content="Test gratuit : estimez votre minimum vital et votre reste à vivre en 2 minutes.">
-  <link rel="stylesheet" href="css/style.css?v=2">
+  <link rel="stylesheet" href="css/style.css?v=3">
+  <link rel="stylesheet" href="css/chat-widget.css?v=3">
 </head>
 <body>
 
@@ -101,7 +102,7 @@
           </div>
         </div>
 
-        <!-- Score (nouveau) -->
+        <!-- Score -->
         <div style="text-align: center; margin: var(--space-xl) 0;">
           <div style="position: relative; width: 100px; height: 100px; margin: 0 auto;">
             <svg width="100" height="100" viewBox="0 0 100 100">
@@ -126,7 +127,7 @@
           <p class="muted small" id="outTip"></p>
         </div>
 
-        <!-- Message de sauvegarde pour les connectés -->
+        <!-- Message de sauvegarde -->
         <div class="card mt-md" id="saved-message" style="display: none; background: rgba(13,159,111,0.1); border: 1px solid var(--accent);">
           <p style="color: var(--accent); font-weight: 600; margin: 0;">
             ✅ Résultats sauvegardés dans votre Dashboard !
@@ -134,10 +135,7 @@
         </div>
 
         <div class="cta-row mt-lg">
-          <!-- Si connecté -->
           <a class="btn btn-primary" href="dashboard.html" data-auth="in">📊 Voir mon Dashboard</a>
-          
-          <!-- Si pas connecté -->
           <a class="btn btn-primary" href="login.html" data-auth="out">Créer un compte</a>
           <a class="btn btn-secondary" href="tarifs.html" data-auth="out">Voir les offres</a>
         </div>
@@ -153,22 +151,17 @@
 </footer>
 
 <script src="assets/nav-auth.js"></script>
+<script src="js/chat-widget.js"></script>
 <script>
-  // ============================================
-  // CONFIGURATION
-  // ============================================
   document.getElementById("year").textContent = new Date().getFullYear();
   
-  const eur = (n) => new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(n);
-  const WEEKS_PER_MONTH = 4.33;
+  var eur = function(n) { return new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(n); };
+  var WEEKS_PER_MONTH = 4.33;
 
-  // ============================================
-  // UTILITAIRES
-  // ============================================
   function toNumber(id) {
-    const v = document.getElementById(id).value;
+    var v = document.getElementById(id).value;
     if (v === "" || v === null || v === undefined) return 0;
-    const n = Number(v);
+    var n = Number(v);
     return Number.isFinite(n) && n >= 0 ? n : 0;
   }
 
@@ -178,19 +171,16 @@
 
   function isLoggedIn() {
     try {
-      const s = JSON.parse(localStorage.getItem("auth_session_v1"));
+      var s = JSON.parse(localStorage.getItem("auth_session_v1"));
       return !!(s && s.email);
-    } catch { 
+    } catch(e) { 
       return false; 
     }
   }
 
-  // ============================================
-  // CALCUL DU SCORE
-  // ============================================
   function calculateScore(revenus, resteAVivre) {
     if (revenus <= 0) return 0;
-    const ratio = resteAVivre / revenus;
+    var ratio = resteAVivre / revenus;
     if (ratio >= 0.25) return Math.min(100, Math.round(70 + ratio * 100));
     if (ratio >= 0.10) return Math.round(40 + ratio * 200);
     if (ratio > 0) return Math.max(10, Math.round(ratio * 400));
@@ -209,118 +199,95 @@
     return 'Votre reste à vivre est faible. Identifiez les dépenses à réduire en priorité.';
   }
 
-  // ============================================
-  // SAUVEGARDE DANS LOCALSTORAGE
-  // ============================================
   function saveTestToHistory(testData) {
-    let tests = [];
+    var tests = [];
     try {
-      const stored = localStorage.getItem('tests');
+      var stored = localStorage.getItem('tests');
       if (stored) tests = JSON.parse(stored);
     } catch (e) {}
 
-    // Ajouter le nouveau test
     tests.push(testData);
     localStorage.setItem('tests', JSON.stringify(tests));
-
-    // Mettre à jour le dernier test
     localStorage.setItem('lastTest', JSON.stringify(testData));
-
     return testData;
   }
 
-  // ============================================
-  // ANIMATION DU SCORE
-  // ============================================
   function animateScore(score) {
-    const circumference = 2 * Math.PI * 40; // 251
-    const offset = circumference - (score / 100) * circumference;
+    var circumference = 2 * Math.PI * 40;
+    var offset = circumference - (score / 100) * circumference;
     
-    setTimeout(() => {
+    setTimeout(function() {
       document.getElementById('score-circle').style.strokeDashoffset = offset;
     }, 200);
 
-    // Animer le chiffre
-    let current = 0;
-    const duration = 1000;
-    const start = performance.now();
+    var current = 0;
+    var duration = 1000;
+    var start = performance.now();
     
     function step(timestamp) {
-      const progress = Math.min((timestamp - start) / duration, 1);
+      var progress = Math.min((timestamp - start) / duration, 1);
       current = Math.floor(progress * score);
       document.getElementById('score-value').textContent = current;
       if (progress < 1) requestAnimationFrame(step);
     }
     requestAnimationFrame(step);
 
-    // Badge
-    const scoreInfo = getScoreInfo(score);
-    const badge = document.getElementById('score-badge');
+    var scoreInfo = getScoreInfo(score);
+    var badge = document.getElementById('score-badge');
     badge.textContent = scoreInfo.label;
     badge.className = 'badge ' + scoreInfo.class;
   }
 
-  // ============================================
-  // SOUMISSION DU FORMULAIRE
-  // ============================================
-  document.getElementById("freeTestForm").addEventListener("submit", (e) => {
+  document.getElementById("freeTestForm").addEventListener("submit", function(e) {
     e.preventDefault();
 
-    // Récupérer les valeurs
-    const income = toNumber("income");
-    const rent = toNumber("rent");
-    const fixed = toNumber("fixed");
-    const variable = toNumber("variable");
-    const subs = toNumber("subs");
-    const risk = toNumber("risk");
+    var income = toNumber("income");
+    var rent = toNumber("rent");
+    var fixed = toNumber("fixed");
+    var variable = toNumber("variable");
+    var subs = toNumber("subs");
+    var risk = toNumber("risk");
 
-    // Calculs
-    const depensesEssentielles = clamp(rent + fixed + variable);
-    const depensesNonEssentielles = clamp(subs + risk);
-    const minMonth = clamp(depensesEssentielles + depensesNonEssentielles);
-    const minWeek = clamp(minMonth / WEEKS_PER_MONTH);
-    const leftMonth = clamp(income - minMonth);
+    var depensesEssentielles = clamp(rent + fixed + variable);
+    var depensesNonEssentielles = clamp(subs + risk);
+    var minMonth = clamp(depensesEssentielles + depensesNonEssentielles);
+    var minWeek = clamp(minMonth / WEEKS_PER_MONTH);
+    var leftMonth = clamp(income - minMonth);
 
-    // Afficher les résultats de base
     document.getElementById("outMinMonth").textContent = eur(minMonth);
     document.getElementById("outMinWeek").textContent = eur(minWeek);
     document.getElementById("outLeftMonth").textContent = eur(leftMonth);
 
-    // Calculer le score
-    const score = calculateScore(income, leftMonth);
+    var score = calculateScore(income, leftMonth);
     animateScore(score);
 
-    // Message et conseils
-    let message = "";
-    let tip = "";
+    var message = "";
+    var tip = "";
 
     if (income === 0) {
       message = "Entrez un revenu pour obtenir une estimation fiable.";
       tip = "Si vous n'avez pas de revenu fixe, mettez une moyenne mensuelle.";
     } else if (leftMonth < 0) {
       message = "🔴 Vous dépensez plus que votre revenu (déficit).";
-      tip = "La priorité : réduire abonnements/risques et ajuster les variables (courses/transport) dès cette semaine.";
+      tip = "La priorité : réduire abonnements/risques et ajuster les variables.";
     } else if (leftMonth < income * 0.10) {
       message = "🟠 Vous avez peu de marge (reste à vivre faible).";
-      tip = "Objectif : remonter votre marge à 10–15% du revenu (petites coupes régulières).";
+      tip = "Objectif : remonter votre marge à 10–15% du revenu.";
     } else {
       message = "🟢 Vous avez une marge correcte. Vous pouvez structurer une épargne.";
-      tip = "Fixez un objectif (ex : voiture 10 000 €) et mettez en place un montant par semaine.";
+      tip = "Fixez un objectif et mettez en place un montant par semaine.";
     }
 
-    const leaks = subs + risk;
+    var leaks = subs + risk;
     if (leaks >= 50) {
-      tip += ` (Info : vos postes "abonnements/risque" totalisent ${eur(leaks)} / mois.)`;
+      tip += " (Info : vos postes abonnements/risque totalisent " + eur(leaks) + " / mois.)";
     }
 
     document.getElementById("outMessage").textContent = message;
     document.getElementById("outTip").textContent = tip;
 
-    // ============================================
-    // SAUVEGARDE SI CONNECTÉ
-    // ============================================
     if (isLoggedIn()) {
-      const testData = {
+      var testData = {
         date: new Date().toISOString(),
         revenus: income,
         depensesEssentielles: depensesEssentielles,
@@ -331,12 +298,9 @@
       };
 
       saveTestToHistory(testData);
-
-      // Afficher le message de sauvegarde
       document.getElementById("saved-message").style.display = "block";
     }
 
-    // Afficher la section résultats
     document.getElementById("result").style.display = "block";
     document.getElementById("result").scrollIntoView({ behavior: "smooth", block: "start" });
   });
