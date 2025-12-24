@@ -237,4 +237,60 @@ function simulerImprevu() {
 }
 
 // === DÉMARRAGE ===
-document.addEventListener('DOMContentLoaded', initDashboard);
+document.addEventListener('DOMContentLoaded', function() {
+  initDashboard();
+  
+  // === EVENT LISTENERS POUR MOBILE ===
+  
+  // Navigation sidebar
+  document.querySelectorAll('.sidebar-link[data-section]').forEach(link => {
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
+      showSection(this.dataset.section);
+    });
+    // Support tactile
+    link.addEventListener('touchend', function(e) {
+      e.preventDefault();
+      showSection(this.dataset.section);
+    });
+  });
+  
+  // Actions rapides
+  document.querySelectorAll('.action-link[data-target]').forEach(link => {
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
+      showSection(this.dataset.target);
+    });
+  });
+  
+  // Boutons modals
+  document.getElementById('btn-versement')?.addEventListener('click', () => openModal('modal-versement'));
+  document.getElementById('btn-objectif')?.addEventListener('click', () => openModal('modal-objectif'));
+  document.getElementById('btn-abonnement')?.addEventListener('click', () => openModal('modal-abonnement'));
+  document.getElementById('btn-jeux')?.addEventListener('click', () => openModal('modal-jeux'));
+  
+  // Boutons save
+  document.getElementById('btn-save-versement')?.addEventListener('click', saveVersement);
+  document.getElementById('btn-save-objectif')?.addEventListener('click', saveObjectif);
+  document.getElementById('btn-save-abonnement')?.addEventListener('click', saveAbonnement);
+  document.getElementById('btn-save-jeux')?.addEventListener('click', saveJeux);
+  
+  // Boutons fermer modals
+  document.querySelectorAll('[data-close]').forEach(btn => {
+    btn.addEventListener('click', function() {
+      closeModal(this.dataset.close);
+    });
+  });
+  
+  // Comparateur et Simulateur
+  document.getElementById('btn-comparer')?.addEventListener('click', comparerChoix);
+  document.getElementById('btn-simuler')?.addEventListener('click', simulerImprevu);
+  document.getElementById('btn-rappel')?.addEventListener('click', saveRappel);
+  
+  // Fermer modal en cliquant sur le fond
+  document.querySelectorAll('.modal').forEach(modal => {
+    modal.addEventListener('click', function(e) {
+      if (e.target === this) closeModal(this.id);
+    });
+  });
+});
