@@ -4,7 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Où part mon argent ?</title>
-  <link rel="stylesheet" href="css/style.css?v=2">
+  <link rel="stylesheet" href="css/style.css?v=3">
+  <link rel="stylesheet" href="css/chat-widget.css?v=3">
 </head>
 <body>
 
@@ -21,9 +22,7 @@
     <a class="nav-link active" href="index.html">Accueil</a>
     <a class="nav-link" href="test.html">Test gratuit</a>
     <a class="nav-link" href="tarifs.html">Tarifs</a>
-    <!-- Visible si PAS connecté -->
     <a class="nav-link" href="login.html" data-auth="out">Connexion</a>
-    <!-- Visible si connecté -->
     <a class="nav-link" href="dashboard.html" data-auth="in">Dashboard</a>
     <button class="btn-ghost" type="button" data-auth="in" data-logout>Déconnexion</button>
   </nav>
@@ -70,6 +69,7 @@
       <li><strong>Test gratuit</strong> : estimation rapide (sans compte).</li>
       <li><strong>Dashboard</strong> : suivi simple semaine/mois (avec compte).</li>
       <li><strong>Rappels email</strong> : 1 fois/semaine pour rester régulier.</li>
+      <li><strong>Assistant IA</strong> : conseils personnalisés (plan Complet).</li>
     </ul>
     <div class="cta-row">
       <a class="btn btn-primary" href="test.html">Commencer gratuitement</a>
@@ -87,6 +87,7 @@
 </main>
 
 <script src="assets/nav-auth.js"></script>
+<script src="js/chat-widget.js"></script>
 <script>
   document.getElementById("year").textContent = new Date().getFullYear();
 </script>
