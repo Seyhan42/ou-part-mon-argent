@@ -532,3 +532,300 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 </body>
 </html>
+radius:8px"><div style="font-size:11px;color:var(--text-muted)">Coût/mois</div><div style="font-size:20px;font-weight:700;color:var(--danger)">-' + formatMoney(coutMensuel) + '</div></div>';
+    html += '<div style="text-align:center;padding:16px;background:#fff;border-radius:8px"><div style="font-size:11px;color:var(--text-muted)">Nouveau reste</div><div style="font-size:20px;font-weight:700;color:' + (nouveauReste >= 0 ? 'var(--accent)' : 'var(--danger)') + '">' + formatMoney(nouveauReste) + '</div></div>';
+    html += '</div></div>';
+
+    document.getElementById('simulator-result').innerHTML = html;
+    document.getElementById('simulator-result').style.display = '';
+  }
+
+  // === INIT ===
+  function init() {
+    console.log('Dashboard init');
+
+    // Navigation sidebar
+    document.querySelectorAll('.sidebar-link[data-section]').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        showSection(this.getAttribute('data-section'));
+      });
+    });
+
+    // Modals close
+    document.querySelectorAll('[data-close]').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        closeModal(this.getAttribute('data-close'));
+      });
+    });
+
+    // Modal backdrop
+    document.querySelectorAll('.modal').forEach(function(modal) {
+      modal.addEventListener('click', function(e) {
+        if (e.target === this) closeModal(this.id);
+      });
+    });
+
+    // Boutons épargne
+    var btnAddEpargne = document.getElementById('btn-add-epargne');
+    var btnEditObjectif = document.getElementById('btn-edit-objectif');
+    var btnSaveEpargne = document.getElementById('btn-save-epargne');
+    var btnSaveObjectif = document.getElementById('btn-save-objectif');
+
+    if (btnAddEpargne) btnAddEpargne.addEventListener('click', function() { openModal('modal-epargne'); });
+    if (btnEditObjectif) btnEditObjectif.addEventListener('click', function() { 
+      document.getElementById('input-objectif').value = getData('savingsGoalTotal', 0) || '';
+      document.getElementById('input-deja-epargne').value = getData('savingsTotalSaved', 0) || '';
+      openModal('modal-objectif'); 
+    });
+
+    if (btnSaveEpargne) btnSaveEpargne.addEventListener('click', function() {
+      var mois = parseFloat(document.getElementById('input-epargne-mois').value) || 0;
+      var total = getData('savingsTotalSaved', 0);
+      setData('savedThisMonth', mois);
+      setData('savingsTotalSaved', total + mois);
+      document.getElementById('input-epargne-mois').value = '';
+      closeModal('modal-epargne');
+      renderEpargne();
+      renderResume();
+    });
+
+    if (btnSaveObjectif) btnSaveObjectif.addEventListener('click', function() {
+      var objectif = parseFloat(document.getElementById('input-objectif').value) || 0;
+      var deja = parseFloat(document.getElementById('input-deja-epargne').value) || 0;
+      setData('savingsGoalTotal', objectif);
+      setData('savingsTotalSaved', deja);
+      closeModal('modal-objectif');
+      renderEpargne();
+      renderResume();
+    });
+
+    // Boutons fuites
+    var btnAddAbo = document.getElementById('btn-add-abo');
+    var btnEditJeux = document.getElementById('btn-edit-jeux');
+    var btnSaveAbo = document.getElementById('btn-save-abo');
+    var btnSaveJeux = document.getElementById('btn-save-jeux');
+
+    if (btnAddAbo) btnAddAbo.addEventListener('click', function() { openModal('modal-abo'); });
+    if (btnEditJeux) btnEditJeux.addEventListener('click', function() { 
+      document.getElementById('input-jeux').value = getData('gambling', 0) || '';
+      openModal('modal-jeux'); 
+    });
+
+    if (btnSaveAbo) btnSaveAbo.addEventListener('click', function() {
+      var nom = document.getElementById('input-abo-nom').value.trim();
+      var montant = parseFloat(document.getElementById('input-abo-montant').value) || 0;
+      if (!nom || montant <= 0) { alert('Remplissez tous les champs'); return; }
+      var subs = getData('subscriptions', []);
+      subs.push({ nom: nom, montant: montant });
+      setData('subscriptions', subs);
+      document.getElementById('input-abo-nom').value = '';
+      document.getElementById('input-abo-montant').value = '';
+      closeModal('modal-abo');
+      renderFuites();
+      renderResume();
+    });
+
+    if (btnSaveJeux) btnSaveJeux.addEventListener('click', function() {
+      var montant = parseFloat(document.getElementById('input-jeux').value) || 0;
+      setData('gambling', montant);
+      closeModal('modal-jeux');
+      renderFuites();
+      renderResume();
+    });
+
+    // Comparateur
+    var btnComparer = document.getElementById('btn-comparer');
+    if (btnComparer) btnComparer.addEventListener('click', comparer);
+
+    // Simulateur
+    var btnSimuler = document.getElementById('btn-simuler');
+    if (btnSimuler) btnSimuler.addEventListener('click', simuler);
+
+    // Rappels
+    var btnSaveRappel = document.getElementById('btn-save-rappel');
+    if (btnSaveRappel) btnSaveRappel.addEventListener('click', function() {
+      var actif = document.getElementById('rappel-actif').checked;
+      var email = document.getElementById('rappel-email').value.trim();
+      setData('rappelConfig', { actif: actif, email: email });
+      alert('Configuration enregistrée !');
+    });
+
+    // Render
+    renderQuickActions();
+    renderResume();
+    renderHistorique();
+    if (hasFeature('epargne')) renderEpargne();
+    if (hasFeature('fuites')) renderFuites();
+
+    console.log('Dashboard ready');
+  }
+
+  // Exposer showSection globalement
+  window.showSection = showSection;
+
+  // Start
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>
+
+</body>
+</html>
+radius:8px"><div style="font-size:11px;color:var(--text-muted)">Coût/mois</div><div style="font-size:20px;font-weight:700;color:var(--danger)">-' + formatMoney(coutMensuel) + '</div></div>';
+    html += '<div style="text-align:center;padding:16px;background:#fff;border-radius:8px"><div style="font-size:11px;color:var(--text-muted)">Nouveau reste</div><div style="font-size:20px;font-weight:700;color:' + (nouveauReste >= 0 ? 'var(--accent)' : 'var(--danger)') + '">' + formatMoney(nouveauReste) + '</div></div>';
+    html += '</div></div>';
+
+    document.getElementById('simulator-result').innerHTML = html;
+    document.getElementById('simulator-result').style.display = '';
+  }
+
+  // === INITIALISATION ===
+  function init() {
+    console.log('Dashboard init');
+
+    // Vérifier connexion
+    try {
+      var session = JSON.parse(localStorage.getItem('auth_session_v1'));
+      if (!session || !session.email) {
+        window.location.replace('login.html');
+        return;
+      }
+    } catch(e) {
+      window.location.replace('login.html');
+      return;
+    }
+
+    // Render initial
+    renderQuickActions();
+    renderResume();
+    renderHistorique();
+    renderEpargne();
+    renderFuites();
+
+    // Navigation sidebar
+    document.querySelectorAll('.sidebar-link[data-section]').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        showSection(this.getAttribute('data-section'));
+      });
+    });
+
+    // Boutons épargne
+    var btnAddEpargne = document.getElementById('btn-add-epargne');
+    var btnEditObjectif = document.getElementById('btn-edit-objectif');
+    if (btnAddEpargne) btnAddEpargne.addEventListener('click', function() { openModal('modal-epargne'); });
+    if (btnEditObjectif) btnEditObjectif.addEventListener('click', function() { openModal('modal-objectif'); });
+
+    // Save épargne
+    var btnSaveEpargne = document.getElementById('btn-save-epargne');
+    if (btnSaveEpargne) {
+      btnSaveEpargne.addEventListener('click', function() {
+        var montant = parseFloat(document.getElementById('input-epargne-mois').value) || 0;
+        var total = getData('savingsTotalSaved', 0);
+        setData('savedThisMonth', montant);
+        setData('savingsTotalSaved', total + montant);
+        closeModal('modal-epargne');
+        renderEpargne();
+        renderResume();
+      });
+    }
+
+    // Save objectif
+    var btnSaveObjectif = document.getElementById('btn-save-objectif');
+    if (btnSaveObjectif) {
+      btnSaveObjectif.addEventListener('click', function() {
+        var objectif = parseFloat(document.getElementById('input-objectif').value) || 0;
+        var deja = parseFloat(document.getElementById('input-deja-epargne').value) || 0;
+        setData('savingsGoalTotal', objectif);
+        setData('savingsTotalSaved', deja);
+        closeModal('modal-objectif');
+        renderEpargne();
+        renderResume();
+      });
+    }
+
+    // Boutons fuites
+    var btnAddAbo = document.getElementById('btn-add-abo');
+    var btnEditJeux = document.getElementById('btn-edit-jeux');
+    if (btnAddAbo) btnAddAbo.addEventListener('click', function() { openModal('modal-abo'); });
+    if (btnEditJeux) btnEditJeux.addEventListener('click', function() { openModal('modal-jeux'); });
+
+    // Save abonnement
+    var btnSaveAbo = document.getElementById('btn-save-abo');
+    if (btnSaveAbo) {
+      btnSaveAbo.addEventListener('click', function() {
+        var nom = document.getElementById('input-abo-nom').value.trim();
+        var montant = parseFloat(document.getElementById('input-abo-montant').value) || 0;
+        if (!nom || montant <= 0) { alert('Champs invalides'); return; }
+        var subs = getData('subscriptions', []);
+        subs.push({ nom: nom, montant: montant });
+        setData('subscriptions', subs);
+        document.getElementById('input-abo-nom').value = '';
+        document.getElementById('input-abo-montant').value = '';
+        closeModal('modal-abo');
+        renderFuites();
+        renderResume();
+      });
+    }
+
+    // Save jeux
+    var btnSaveJeux = document.getElementById('btn-save-jeux');
+    if (btnSaveJeux) {
+      btnSaveJeux.addEventListener('click', function() {
+        var montant = parseFloat(document.getElementById('input-jeux').value) || 0;
+        setData('gambling', montant);
+        closeModal('modal-jeux');
+        renderFuites();
+        renderResume();
+      });
+    }
+
+    // Comparateur
+    var btnComparer = document.getElementById('btn-comparer');
+    if (btnComparer) btnComparer.addEventListener('click', comparer);
+
+    // Simulateur
+    var btnSimuler = document.getElementById('btn-simuler');
+    if (btnSimuler) btnSimuler.addEventListener('click', simuler);
+
+    // Rappels
+    var btnSaveRappel = document.getElementById('btn-save-rappel');
+    if (btnSaveRappel) {
+      btnSaveRappel.addEventListener('click', function() {
+        alert('Fonctionnalité bientôt disponible !');
+      });
+    }
+
+    // Fermer modals
+    document.querySelectorAll('[data-close]').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        closeModal(this.getAttribute('data-close'));
+      });
+    });
+
+    // Clic sur fond modal
+    document.querySelectorAll('.modal').forEach(function(modal) {
+      modal.addEventListener('click', function(e) {
+        if (e.target === this) closeModal(this.id);
+      });
+    });
+
+    console.log('Dashboard ready');
+  }
+
+  // Exposer showSection globalement
+  window.showSection = showSection;
+
+  // Démarrer
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>
+
+</body>
+</html>
