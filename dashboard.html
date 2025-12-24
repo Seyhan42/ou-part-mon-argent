@@ -4,8 +4,143 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Dashboard — Où part mon argent ?</title>
-  <link rel="stylesheet" href="css/style.css?v=5">
-  <link rel="stylesheet" href="css/dashboard.css?v=5">
+  <link rel="stylesheet" href="css/style.css?v=6">
+  <style>
+    .dashboard{max-width:1000px;margin:0 auto;padding:24px 16px}
+    .tabs{display:flex;gap:4px;background:#fff;padding:4px;border-radius:12px;border:1px solid #e5e7eb;margin-bottom:24px}
+    .tab{flex:1;padding:12px;border:none;background:transparent;border-radius:8px;font-weight:600;font-size:14px;cursor:pointer;color:#6b7280}
+    .tab:hover{background:#f3f4f6;color:#111}
+    .tab.active{background:#0d9f6f;color:#fff}
+    .tab-content{display:none}
+    .tab-content.active{display:block}
+    .diagnostic-card{background:linear-gradient(135deg,rgba(13,159,111,0.1),rgba(59,130,246,0.05));border:1px solid rgba(13,159,111,0.2);border-radius:12px;padding:20px;margin-bottom:24px}
+    .diagnostic-card.warning{background:linear-gradient(135deg,rgba(245,158,11,0.1),rgba(245,158,11,0.05));border-color:rgba(245,158,11,0.3)}
+    .diagnostic-card.danger{background:linear-gradient(135deg,rgba(220,38,38,0.1),rgba(220,38,38,0.05));border-color:rgba(220,38,38,0.3)}
+    .diagnostic-icon{font-size:32px;margin-bottom:8px}
+    .diagnostic-text{font-size:18px;font-weight:600;margin-bottom:4px}
+    .diagnostic-sub{font-size:14px;color:#6b7280}
+    .score-section{text-align:center;padding:24px}
+    .score-circle{position:relative;width:160px;height:160px;margin:0 auto 16px}
+    .score-circle svg{transform:rotate(-90deg)}
+    .score-circle-bg{fill:none;stroke:#e5e7eb;stroke-width:12}
+    .score-circle-fill{fill:none;stroke:#0d9f6f;stroke-width:12;stroke-linecap:round;transition:stroke-dashoffset 1s}
+    .score-circle-fill.warning{stroke:#f59e0b}
+    .score-circle-fill.danger{stroke:#dc2626}
+    .score-value{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+    .score-number{font-size:42px;font-weight:800}
+    .score-label{font-size:14px;color:#6b7280}
+    .score-factors{background:#f3f4f6;border-radius:8px;padding:16px;margin-top:16px;text-align:left}
+    .score-factors-title{font-size:12px;font-weight:600;color:#6b7280;text-transform:uppercase;margin-bottom:8px}
+    .score-factor{display:flex;align-items:center;gap:8px;padding:4px 0;font-size:14px}
+    .score-factor.positive{color:#0d9f6f}
+    .score-factor.negative{color:#dc2626}
+    .mission{display:flex;align-items:center;gap:16px;padding:12px;background:#f3f4f6;border-radius:8px;margin-bottom:8px}
+    .mission.completed{background:rgba(13,159,111,0.1)}
+    .mission-check{width:28px;height:28px;border-radius:50%;border:2px solid #d1d5db;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+    .mission.completed .mission-check{background:#0d9f6f;border-color:#0d9f6f;color:#fff}
+    .mission-content{flex:1}
+    .mission-text{font-size:14px;font-weight:500}
+    .mission-impact{font-size:12px;color:#6b7280}
+    .mission-points{font-size:12px;font-weight:600;color:#0d9f6f;background:rgba(13,159,111,0.1);padding:4px 8px;border-radius:999px}
+    .epargne-card{background:linear-gradient(135deg,#0d9f6f,#0b8a5e);color:#fff;border-radius:12px;padding:24px;margin-top:24px}
+    .epargne-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;flex-wrap:wrap;gap:8px}
+    .epargne-title{font-size:18px;font-weight:700}
+    .epargne-progress{height:14px;background:rgba(255,255,255,0.25);border-radius:999px;overflow:hidden;margin-bottom:20px}
+    .epargne-progress-fill{height:100%;background:#fff;border-radius:999px;transition:width 0.5s}
+    .epargne-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+    .epargne-stat{text-align:center}
+    .epargne-stat-value{font-size:20px;font-weight:700}
+    .epargne-stat-label{font-size:11px;opacity:0.85}
+    .epargne-stat.highlight{background:rgba(255,255,255,0.15);border-radius:8px;padding:8px}
+    .last-test-card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:20px;margin-top:24px}
+    .journal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:16px}
+    .journal-filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+    .filter-btn{padding:6px 16px;border:1px solid #e5e7eb;background:#fff;border-radius:999px;font-size:12px;font-weight:500;cursor:pointer}
+    .filter-btn:hover,.filter-btn.active{background:#0d9f6f;color:#fff;border-color:#0d9f6f}
+    .movement-list{display:flex;flex-direction:column;gap:8px}
+    .movement{display:flex;align-items:center;gap:12px;padding:12px;background:#fff;border:1px solid #e5e7eb;border-radius:8px}
+    .movement-icon{width:44px;height:44px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+    .movement-icon.revenu{background:rgba(34,197,94,0.1)}
+    .movement-icon.epargne{background:rgba(13,159,111,0.1)}
+    .movement-icon.essentiel{background:rgba(59,130,246,0.1)}
+    .movement-icon.non-essentiel{background:rgba(245,158,11,0.1)}
+    .movement-icon.imprevu{background:rgba(220,38,38,0.1)}
+    .movement-info{flex:1;min-width:0}
+    .movement-title{font-weight:600;font-size:14px}
+    .movement-meta{font-size:12px;color:#6b7280}
+    .movement-amount{font-weight:700}
+    .movement-amount.positive{color:#0d9f6f}
+    .movement-amount.negative{color:#dc2626}
+    .movement-btn{background:none;border:none;cursor:pointer;padding:8px;font-size:16px;border-radius:4px}
+    .movement-btn:hover{background:#f3f4f6}
+    .movement-btn.delete:hover{background:rgba(220,38,38,0.1)}
+    .month-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:24px}
+    .summary-card{text-align:center;padding:20px;border-radius:8px}
+    .summary-card.entrees{background:rgba(13,159,111,0.1)}
+    .summary-card.sorties{background:rgba(220,38,38,0.1)}
+    .summary-card.solde{background:#f3f4f6}
+    .summary-value{font-size:24px;font-weight:700}
+    .summary-value.positive{color:#0d9f6f}
+    .summary-value.negative{color:#dc2626}
+    .summary-label{font-size:12px;color:#6b7280;margin-top:4px}
+    .tool-card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:24px;margin-bottom:24px;position:relative;overflow:hidden}
+    .tool-header{display:flex;align-items:center;gap:16px;margin-bottom:24px;flex-wrap:wrap}
+    .tool-icon{width:52px;height:52px;background:#f3f4f6;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0}
+    .tool-info{flex:1;min-width:150px}
+    .tool-title{font-size:18px;font-weight:700}
+    .tool-desc{font-size:14px;color:#6b7280}
+    .tool-card.locked .tool-content{filter:blur(4px);pointer-events:none;opacity:0.4}
+    .locked-overlay{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;z-index:10;text-align:center;padding:24px;background:rgba(255,255,255,0.92);border-radius:12px}
+    .tool-card.locked .locked-overlay{display:flex}
+    .locked-icon{font-size:52px;margin-bottom:16px}
+    .locked-title{font-size:18px;font-weight:600;margin-bottom:8px}
+    .locked-desc{font-size:14px;color:#6b7280;margin-bottom:20px}
+    .compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+    .compare-box{padding:20px;border-radius:8px}
+    .compare-box.a{background:rgba(13,159,111,0.1);border:2px solid #0d9f6f}
+    .compare-box.b{background:rgba(59,130,246,0.1);border:2px solid #3b82f6}
+    .compare-label{display:flex;align-items:center;gap:8px;margin-bottom:16px}
+    .compare-badge{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:14px}
+    .compare-badge.a{background:#0d9f6f}
+    .compare-badge.b{background:#3b82f6}
+    .compare-result{margin-top:24px;padding:20px;background:#f3f4f6;border-radius:8px;display:none}
+    .simulation-result{padding:20px;border-radius:12px;margin-top:20px}
+    .simulation-result.success{background:rgba(13,159,111,0.1);border:1px solid #0d9f6f}
+    .simulation-result.warning{background:rgba(245,158,11,0.1);border:1px solid #f59e0b}
+    .simulation-result.danger{background:rgba(220,38,38,0.1);border:1px solid #dc2626}
+    .prelevement{display:flex;align-items:center;gap:16px;padding:12px;background:#f3f4f6;border-radius:8px;margin-bottom:8px}
+    .prelevement-date{width:55px;text-align:center}
+    .prelevement-day{font-size:20px;font-weight:700}
+    .prelevement-month{font-size:11px;color:#6b7280}
+    .prelevement-info{flex:1}
+    .prelevement-name{font-weight:600}
+    .prelevement-amount{font-weight:700;color:#dc2626}
+    .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;padding:16px}
+    .modal.open{display:flex}
+    .modal-content{background:#fff;border-radius:16px;max-width:480px;width:100%;max-height:90vh;overflow:auto}
+    .modal-header{display:flex;justify-content:space-between;align-items:center;padding:20px;border-bottom:1px solid #e5e7eb}
+    .modal-title{font-size:18px;font-weight:700}
+    .modal-close{background:none;border:none;font-size:28px;cursor:pointer;color:#6b7280;line-height:1}
+    .modal-body{padding:20px}
+    .modal-footer{padding:20px;border-top:1px solid #e5e7eb;display:flex;gap:12px;justify-content:flex-end}
+    .type-selector{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:20px}
+    .type-option{padding:16px 8px;border:2px solid #e5e7eb;border-radius:8px;cursor:pointer;text-align:center}
+    .type-option:hover{border-color:#0d9f6f}
+    .type-option.selected{border-color:#0d9f6f;background:rgba(13,159,111,0.1)}
+    .type-option-icon{font-size:26px;margin-bottom:4px}
+    .type-option-label{font-size:11px;font-weight:600}
+    .projection-card{background:#f3f4f6;border-radius:8px;padding:16px;margin-top:24px}
+    .empty-state{text-align:center;padding:48px;color:#6b7280}
+    .empty-state-icon{font-size:52px;margin-bottom:16px}
+    @media(max-width:768px){
+      .tabs{flex-wrap:wrap}.tab{flex:none;width:calc(33.33% - 4px);padding:10px 8px;font-size:12px}
+      .epargne-stats{grid-template-columns:repeat(2,1fr)}
+      .compare-grid{grid-template-columns:1fr}
+      .type-selector{grid-template-columns:repeat(2,1fr)}
+      .month-summary{grid-template-columns:1fr}
+      .journal-header{flex-direction:column;align-items:stretch}
+    }
+  </style>
 </head>
 <body>
 
@@ -28,419 +163,373 @@
 </header>
 
 <main class="dashboard">
-  <!-- Tabs -->
   <div class="tabs">
-    <button class="tab active" data-tab="apercu">📊 Aperçu</button>
-    <button class="tab" data-tab="mouvements">📋 Mouvements</button>
-    <button class="tab" data-tab="outils">🛠️ Outils</button>
+    <button class="tab active" onclick="showTab('apercu')">📊 Aperçu</button>
+    <button class="tab" onclick="showTab('mouvements')">📋 Mouvements</button>
+    <button class="tab" onclick="showTab('outils')">🛠️ Outils</button>
   </div>
 
-  <!-- ==================== APERÇU ==================== -->
+  <!-- APERÇU -->
   <div class="tab-content active" id="tab-apercu">
-    
-    <!-- Diagnostic automatique -->
     <div class="diagnostic-card" id="diagnostic-card">
-      <div class="diagnostic-icon" id="diagnostic-icon">🎯</div>
-      <div class="diagnostic-text" id="diagnostic-text">Chargement...</div>
-      <div class="diagnostic-sub" id="diagnostic-sub"></div>
+      <div class="diagnostic-icon" id="diagnostic-icon">📝</div>
+      <div class="diagnostic-text" id="diagnostic-text">Commencez par ajouter vos revenus</div>
+      <div class="diagnostic-sub" id="diagnostic-sub">Ajoutez un mouvement pour voir votre situation.</div>
     </div>
     
-    <!-- Stats principales -->
     <div class="grid-4">
-      <div class="stat-card">
-        <div class="stat-label">💵 Revenus</div>
-        <div class="stat-value" id="stat-revenus">0 €</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">🏠 Essentielles</div>
-        <div class="stat-value" id="stat-essentielles">0 €</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">🛍️ Non essentielles</div>
-        <div class="stat-value" id="stat-non-essentielles">0 €</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">✨ Reste à vivre</div>
-        <div class="stat-value positive" id="stat-reste">0 €</div>
-      </div>
+      <div class="stat-card"><div class="stat-label">💵 Revenus</div><div class="stat-value" id="stat-revenus">0 €</div></div>
+      <div class="stat-card"><div class="stat-label">🏠 Essentielles</div><div class="stat-value" id="stat-essentielles">0 €</div></div>
+      <div class="stat-card"><div class="stat-label">🛍️ Non essentielles</div><div class="stat-value" id="stat-non-essentielles">0 €</div></div>
+      <div class="stat-card"><div class="stat-label">✨ Reste à vivre</div><div class="stat-value positive" id="stat-reste">0 €</div></div>
     </div>
 
     <div class="grid-2 mt-lg">
-      <!-- Score -->
       <div class="card">
-        <h3 style="text-align:center;margin-bottom:0">Score santé financière</h3>
+        <h3 style="text-align:center">Score santé financière</h3>
         <div class="score-section">
-          <div class="score-circle-container">
+          <div class="score-circle">
             <svg width="160" height="160" viewBox="0 0 160 160">
               <circle class="score-circle-bg" cx="80" cy="80" r="70"/>
-              <circle class="score-circle-fill" id="score-circle" cx="80" cy="80" r="70" 
-                stroke-dasharray="440" stroke-dashoffset="440"/>
+              <circle class="score-circle-fill" id="score-circle" cx="80" cy="80" r="70" stroke-dasharray="440" stroke-dashoffset="440"/>
             </svg>
-            <div class="score-value-container">
-              <div class="score-number" id="score-number">0</div>
-              <div class="score-label">/ 100</div>
-            </div>
+            <div class="score-value"><div class="score-number" id="score-number">0</div><div class="score-label">/ 100</div></div>
           </div>
           <span class="badge" id="score-badge">—</span>
-          
-          <!-- Facteurs du score -->
-          <div class="score-factors">
-            <div class="score-factors-title">Pourquoi ce score ?</div>
-            <div id="score-factors-list"></div>
-          </div>
+          <div class="score-factors"><div class="score-factors-title">Pourquoi ce score ?</div><div id="score-factors-list"></div></div>
         </div>
       </div>
 
-      <!-- Missions -->
       <div class="card">
         <h3>🎯 Missions de la semaine</h3>
-        <div class="missions-container" id="missions-list"></div>
-        <div style="text-align:center;margin-top:16px">
-          <span class="badge success" id="missions-progress">0/3 complétées</span>
-        </div>
+        <div id="missions-list"></div>
+        <div style="text-align:center;margin-top:16px"><span class="badge success" id="missions-progress">0/3</span></div>
       </div>
     </div>
 
-    <!-- Objectif épargne -->
     <div class="epargne-card">
       <div class="epargne-header">
-        <div>
-          <div class="epargne-title">💎 Objectif épargne</div>
-          <div class="epargne-objectif" id="epargne-objectif-text">Aucun objectif défini</div>
-        </div>
-        <button class="btn btn-ghost" style="background:rgba(255,255,255,0.2);color:#fff;border:none" onclick="Dashboard.openModal('modal-epargne')">⚙️ Configurer</button>
+        <div><div class="epargne-title">💎 Objectif épargne</div><div id="epargne-objectif-text" style="font-size:14px;opacity:0.9">Aucun objectif défini</div></div>
+        <button class="btn btn-ghost" style="background:rgba(255,255,255,0.2);color:#fff;border:none" onclick="openModal('modal-epargne')">⚙️</button>
       </div>
-      <div class="epargne-progress">
-        <div class="epargne-progress-fill" id="epargne-progress" style="width:0%"></div>
-      </div>
+      <div class="epargne-progress"><div class="epargne-progress-fill" id="epargne-progress" style="width:0%"></div></div>
       <div class="epargne-stats">
-        <div class="epargne-stat">
-          <div class="epargne-stat-value" id="epargne-total">0 €</div>
-          <div class="epargne-stat-label">Total épargné</div>
-        </div>
-        <div class="epargne-stat highlight">
-          <div class="epargne-stat-value" id="epargne-mois">0 €</div>
-          <div class="epargne-stat-label">Ce mois-ci</div>
-        </div>
-        <div class="epargne-stat">
-          <div class="epargne-stat-value" id="epargne-restant">0 €</div>
-          <div class="epargne-stat-label">Restant</div>
-        </div>
-        <div class="epargne-stat">
-          <div class="epargne-stat-value" id="epargne-conseille">0 €</div>
-          <div class="epargne-stat-label">Conseillé/mois</div>
-        </div>
+        <div class="epargne-stat"><div class="epargne-stat-value" id="epargne-total">0 €</div><div class="epargne-stat-label">Total épargné</div></div>
+        <div class="epargne-stat highlight"><div class="epargne-stat-value" id="epargne-mois">0 €</div><div class="epargne-stat-label">Ce mois-ci</div></div>
+        <div class="epargne-stat"><div class="epargne-stat-value" id="epargne-restant">0 €</div><div class="epargne-stat-label">Restant</div></div>
+        <div class="epargne-stat"><div class="epargne-stat-value" id="epargne-conseille">0 €</div><div class="epargne-stat-label">Conseillé/mois</div></div>
       </div>
     </div>
 
-    <!-- Projection fin de mois -->
     <div class="projection-card" id="projection-container" style="display:none">
-      <div class="projection-header">
-        <span>📈</span>
-        <div class="projection-title">Projection fin de mois</div>
-      </div>
-      <div>
-        <span class="projection-value" id="projection-value">0 €</span>
-        <span style="font-size:14px;color:var(--text-muted);margin-left:8px" id="projection-days"></span>
-      </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span>📈</span><strong>Projection fin de mois</strong></div>
+      <span style="font-size:20px;font-weight:700" id="projection-value">0 €</span>
+      <span style="font-size:14px;color:#6b7280;margin-left:8px" id="projection-days"></span>
     </div>
 
-    <!-- Dernier test -->
     <div class="last-test-card" id="last-test-container"></div>
   </div>
 
-  <!-- ==================== MOUVEMENTS ==================== -->
+  <!-- MOUVEMENTS -->
   <div class="tab-content" id="tab-mouvements">
     <div class="journal-header">
-      <div>
-        <h2>📋 Journal des mouvements</h2>
-        <p class="muted small">Toutes vos entrées et sorties d'argent</p>
-      </div>
-      <button class="btn btn-primary" onclick="Dashboard.openModal('modal-movement')">+ Ajouter</button>
+      <div><h2>📋 Journal des mouvements</h2><p class="muted small">Toutes vos entrées/sorties</p></div>
+      <button class="btn btn-primary" onclick="openModal('modal-movement')">+ Ajouter</button>
     </div>
-
     <div class="journal-filters">
-      <button class="filter-btn active" data-filter="all">Tous</button>
-      <button class="filter-btn" data-filter="revenu">💵 Revenus</button>
-      <button class="filter-btn" data-filter="epargne">💎 Épargne</button>
-      <button class="filter-btn" data-filter="essentiel">🏠 Essentielles</button>
-      <button class="filter-btn" data-filter="non-essentiel">🛍️ Non ess.</button>
-      <button class="filter-btn" data-filter="imprevu">🚨 Imprévus</button>
+      <button class="filter-btn active" onclick="filterMovements('all',this)">Tous</button>
+      <button class="filter-btn" onclick="filterMovements('revenu',this)">💵 Revenus</button>
+      <button class="filter-btn" onclick="filterMovements('epargne',this)">💎 Épargne</button>
+      <button class="filter-btn" onclick="filterMovements('essentiel',this)">🏠 Essentielles</button>
+      <button class="filter-btn" onclick="filterMovements('non-essentiel',this)">🛍️ Non ess.</button>
+      <button class="filter-btn" onclick="filterMovements('imprevu',this)">🚨 Imprévus</button>
     </div>
-
-    <div class="card">
-      <div class="movement-list" id="movement-list"></div>
-    </div>
-
-    <!-- Résumé du mois -->
+    <div class="card"><div class="movement-list" id="movement-list"></div></div>
     <div class="card mt-lg">
       <h3>📊 Résumé du mois</h3>
       <div class="month-summary">
-        <div class="summary-card entrees">
-          <div class="summary-value positive" id="resume-entrees">+0 €</div>
-          <div class="summary-label">Entrées</div>
-        </div>
-        <div class="summary-card sorties">
-          <div class="summary-value negative" id="resume-sorties">-0 €</div>
-          <div class="summary-label">Sorties</div>
-        </div>
-        <div class="summary-card solde">
-          <div class="summary-value" id="resume-solde">0 €</div>
-          <div class="summary-label">Solde</div>
-        </div>
+        <div class="summary-card entrees"><div class="summary-value positive" id="resume-entrees">+0 €</div><div class="summary-label">Entrées</div></div>
+        <div class="summary-card sorties"><div class="summary-value negative" id="resume-sorties">-0 €</div><div class="summary-label">Sorties</div></div>
+        <div class="summary-card solde"><div class="summary-value" id="resume-solde">0 €</div><div class="summary-label">Solde</div></div>
       </div>
     </div>
   </div>
 
-  <!-- ==================== OUTILS ==================== -->
+  <!-- OUTILS -->
   <div class="tab-content" id="tab-outils">
-    
-    <!-- Comparateur -->
     <div class="tool-card" id="tool-comparateur">
       <div class="tool-header">
         <div class="tool-icon">⚖️</div>
-        <div class="tool-info">
-          <div class="tool-title">Comparateur de décisions</div>
-          <div class="tool-desc">Comparez deux choix et leur impact sur votre budget</div>
-        </div>
+        <div class="tool-info"><div class="tool-title">Comparateur</div><div class="tool-desc">Comparez deux choix financiers</div></div>
         <span class="badge pro">PRO</span>
       </div>
       <div class="tool-content">
         <div class="compare-grid">
           <div class="compare-box a">
-            <div class="compare-label">
-              <div class="compare-badge a">A</div>
-              <input type="text" id="compare-a-nom" placeholder="Nom du choix A" style="border:none;background:transparent;font-weight:600;flex:1;font-size:14px">
-            </div>
-            <div class="field"><label>Coût mensuel (€)</label><input type="number" id="compare-a-cout" placeholder="0"></div>
-            <div class="field mt-sm"><label>Durée (mois)</label><input type="number" id="compare-a-duree" placeholder="12" value="12"></div>
+            <div class="compare-label"><div class="compare-badge a">A</div><input type="text" id="compare-a-nom" placeholder="Choix A" style="border:none;background:transparent;font-weight:600;flex:1"></div>
+            <div class="field"><label>Coût/mois (€)</label><input type="number" id="compare-a-cout" placeholder="0"></div>
+            <div class="field mt-sm"><label>Durée (mois)</label><input type="number" id="compare-a-duree" value="12"></div>
           </div>
           <div class="compare-box b">
-            <div class="compare-label">
-              <div class="compare-badge b">B</div>
-              <input type="text" id="compare-b-nom" placeholder="Nom du choix B" style="border:none;background:transparent;font-weight:600;flex:1;font-size:14px">
-            </div>
-            <div class="field"><label>Coût mensuel (€)</label><input type="number" id="compare-b-cout" placeholder="0"></div>
-            <div class="field mt-sm"><label>Durée (mois)</label><input type="number" id="compare-b-duree" placeholder="12" value="12"></div>
+            <div class="compare-label"><div class="compare-badge b">B</div><input type="text" id="compare-b-nom" placeholder="Choix B" style="border:none;background:transparent;font-weight:600;flex:1"></div>
+            <div class="field"><label>Coût/mois (€)</label><input type="number" id="compare-b-cout" placeholder="0"></div>
+            <div class="field mt-sm"><label>Durée (mois)</label><input type="number" id="compare-b-duree" value="12"></div>
           </div>
         </div>
-        <div style="text-align:center;margin-top:24px">
-          <button class="btn btn-primary" onclick="Dashboard.comparer()">⚖️ Comparer</button>
-        </div>
-        <div class="compare-result" id="compare-result" style="display:none"></div>
+        <div style="text-align:center;margin-top:20px"><button class="btn btn-primary" onclick="comparer()">⚖️ Comparer</button></div>
+        <div class="compare-result" id="compare-result"></div>
       </div>
-      <div class="locked-overlay">
-        <div class="locked-icon">🔒</div>
-        <div class="locked-title">Plan Essentiel requis</div>
-        <div class="locked-desc">Comparez vos choix financiers et prenez de meilleures décisions</div>
-        <a href="tarifs.html" class="btn btn-primary">Débloquer</a>
-      </div>
+      <div class="locked-overlay"><div class="locked-icon">🔒</div><div class="locked-title">Plan Essentiel requis</div><a href="tarifs.html" class="btn btn-primary">Débloquer</a></div>
     </div>
 
-    <!-- Simulateur -->
     <div class="tool-card" id="tool-simulateur">
       <div class="tool-header">
         <div class="tool-icon">🚨</div>
-        <div class="tool-info">
-          <div class="tool-title">Simulateur d'imprévu</div>
-          <div class="tool-desc">Testez la résistance de votre budget face aux imprévus</div>
-        </div>
+        <div class="tool-info"><div class="tool-title">Simulateur d'imprévu</div><div class="tool-desc">Testez la résistance de votre budget</div></div>
         <span class="badge max">MAX</span>
       </div>
       <div class="tool-content">
         <div class="grid-2">
-          <div class="field">
-            <label>Type d'imprévu</label>
-            <select id="imprevu-type">
-              <option value="reparation">🔧 Réparation voiture</option>
-              <option value="sante">🏥 Frais médicaux</option>
-              <option value="maison">🏠 Travaux maison</option>
-              <option value="appareil">📱 Remplacement appareil</option>
-              <option value="autre">📦 Autre</option>
-            </select>
-          </div>
-          <div class="field">
-            <label>Montant (€)</label>
-            <input type="number" id="imprevu-montant" placeholder="1500">
-          </div>
+          <div class="field"><label>Type</label><select id="imprevu-type"><option>🔧 Réparation</option><option>🏥 Santé</option><option>🏠 Maison</option><option>📱 Appareil</option></select></div>
+          <div class="field"><label>Montant (€)</label><input type="number" id="imprevu-montant" placeholder="1500"></div>
         </div>
-        <div class="field mt-md">
-          <label>Étaler sur (mois)</label>
-          <input type="number" id="imprevu-mois" value="3" min="1" max="24">
-        </div>
-        <button class="btn btn-primary mt-lg" style="width:100%" onclick="Dashboard.simuler()">🚨 Simuler l'impact</button>
+        <div class="field mt-md"><label>Étaler sur (mois)</label><input type="number" id="imprevu-mois" value="3" min="1" max="24"></div>
+        <button class="btn btn-primary mt-lg" style="width:100%" onclick="simuler()">🚨 Simuler</button>
         <div id="simulateur-result"></div>
       </div>
-      <div class="locked-overlay">
-        <div class="locked-icon">🔒</div>
-        <div class="locked-title">Plan Complet requis</div>
-        <div class="locked-desc">Anticipez les imprévus et sécurisez votre budget</div>
-        <a href="tarifs.html" class="btn btn-primary">Débloquer</a>
-      </div>
+      <div class="locked-overlay"><div class="locked-icon">🔒</div><div class="locked-title">Plan Complet requis</div><a href="tarifs.html" class="btn btn-primary">Débloquer</a></div>
     </div>
 
-    <!-- Prélèvements -->
     <div class="tool-card" id="tool-prelevements">
       <div class="tool-header">
         <div class="tool-icon">📅</div>
-        <div class="tool-info">
-          <div class="tool-title">Prélèvements à venir</div>
-          <div class="tool-desc">Suivez vos dépenses récurrentes</div>
-        </div>
+        <div class="tool-info"><div class="tool-title">Prélèvements</div><div class="tool-desc">Dépenses récurrentes</div></div>
         <span class="badge pro">PRO</span>
       </div>
       <div class="tool-content">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-          <div style="font-size:14px;color:var(--text-muted)">Total mensuel:</div>
-          <div style="font-size:20px;font-weight:700;color:var(--danger)" id="prelevements-total">0 €</div>
-        </div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:16px"><span style="color:#6b7280">Total:</span><strong style="color:#dc2626" id="prelevements-total">0 €</strong></div>
         <div id="prelevements-list"></div>
-        <button class="btn btn-secondary mt-md" onclick="Dashboard.openModal('modal-prelevement')">+ Ajouter un prélèvement</button>
+        <button class="btn btn-secondary mt-md" onclick="openModal('modal-prelevement')">+ Ajouter</button>
       </div>
-      <div class="locked-overlay">
-        <div class="locked-icon">🔒</div>
-        <div class="locked-title">Plan Essentiel requis</div>
-        <div class="locked-desc">Gardez un œil sur vos prélèvements automatiques</div>
-        <a href="tarifs.html" class="btn btn-primary">Débloquer</a>
-      </div>
+      <div class="locked-overlay"><div class="locked-icon">🔒</div><div class="locked-title">Plan Essentiel requis</div><a href="tarifs.html" class="btn btn-primary">Débloquer</a></div>
     </div>
 
-    <!-- Gestion abonnement -->
     <div class="tool-card">
       <div class="tool-header">
         <div class="tool-icon">⭐</div>
-        <div class="tool-info">
-          <div class="tool-title">Gérer mon abonnement</div>
-          <div class="tool-desc">Modifier ou annuler votre plan</div>
-        </div>
+        <div class="tool-info"><div class="tool-title">Mon abonnement</div><div class="tool-desc">Gérer votre plan</div></div>
       </div>
-      <div class="tool-content">
-        <div style="display:flex;gap:12px;flex-wrap:wrap">
-          <a href="tarifs.html" class="btn btn-primary">Voir les offres</a>
-          <button class="btn btn-ghost" onclick="alert('Portail Stripe à configurer')">Portail client Stripe</button>
-        </div>
-      </div>
+      <div class="tool-content"><a href="tarifs.html" class="btn btn-primary">Voir les offres</a></div>
     </div>
   </div>
 </main>
 
-<!-- ==================== MODALS ==================== -->
-
-<!-- Modal Mouvement -->
+<!-- MODALS -->
 <div class="modal" id="modal-movement">
   <div class="modal-content">
-    <div class="modal-header">
-      <h3 class="modal-title" id="modal-movement-title">Ajouter un mouvement</h3>
-      <button class="modal-close" data-close="modal-movement">×</button>
-    </div>
+    <div class="modal-header"><h3 class="modal-title" id="modal-movement-title">Ajouter un mouvement</h3><button class="modal-close" onclick="closeModal('modal-movement')">×</button></div>
     <div class="modal-body">
       <div class="type-selector">
-        <div class="type-option" data-type="revenu">
-          <div class="type-option-icon">💵</div>
-          <div class="type-option-label">Revenu</div>
-        </div>
-        <div class="type-option" data-type="epargne">
-          <div class="type-option-icon">💎</div>
-          <div class="type-option-label">Épargne</div>
-        </div>
-        <div class="type-option" data-type="essentiel">
-          <div class="type-option-icon">🏠</div>
-          <div class="type-option-label">Essentielle</div>
-        </div>
-        <div class="type-option" data-type="non-essentiel">
-          <div class="type-option-icon">🛍️</div>
-          <div class="type-option-label">Non ess.</div>
-        </div>
-        <div class="type-option" data-type="imprevu">
-          <div class="type-option-icon">🚨</div>
-          <div class="type-option-label">Imprévu</div>
-        </div>
+        <div class="type-option" onclick="selectType('revenu',this)"><div class="type-option-icon">💵</div><div class="type-option-label">Revenu</div></div>
+        <div class="type-option" onclick="selectType('epargne',this)"><div class="type-option-icon">💎</div><div class="type-option-label">Épargne</div></div>
+        <div class="type-option" onclick="selectType('essentiel',this)"><div class="type-option-icon">🏠</div><div class="type-option-label">Essentielle</div></div>
+        <div class="type-option" onclick="selectType('non-essentiel',this)"><div class="type-option-icon">🛍️</div><div class="type-option-label">Non ess.</div></div>
+        <div class="type-option" onclick="selectType('imprevu',this)"><div class="type-option-icon">🚨</div><div class="type-option-label">Imprévu</div></div>
       </div>
-      <div class="field">
-        <label>Description</label>
-        <input type="text" id="movement-desc" placeholder="Ex: Salaire, Loyer, Netflix...">
-      </div>
-      <div class="field mt-md">
-        <label>Montant (€)</label>
-        <input type="number" id="movement-amount" placeholder="0" step="0.01">
-      </div>
-      <div class="field mt-md">
-        <label>Date</label>
-        <input type="date" id="movement-date">
-      </div>
+      <div class="field"><label>Description</label><input type="text" id="movement-desc" placeholder="Ex: Salaire, Loyer..."></div>
+      <div class="field mt-md"><label>Montant (€)</label><input type="number" id="movement-amount" placeholder="0" step="0.01"></div>
+      <div class="field mt-md"><label>Date</label><input type="date" id="movement-date"></div>
     </div>
-    <div class="modal-footer">
-      <button class="btn btn-secondary" data-close="modal-movement">Annuler</button>
-      <button class="btn btn-primary" onclick="Dashboard.saveMovement()">Enregistrer</button>
-    </div>
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('modal-movement')">Annuler</button><button class="btn btn-primary" onclick="saveMovement()">Enregistrer</button></div>
   </div>
 </div>
 
-<!-- Modal Épargne -->
 <div class="modal" id="modal-epargne">
   <div class="modal-content">
-    <div class="modal-header">
-      <h3 class="modal-title">Objectif épargne</h3>
-      <button class="modal-close" data-close="modal-epargne">×</button>
-    </div>
+    <div class="modal-header"><h3 class="modal-title">Objectif épargne</h3><button class="modal-close" onclick="closeModal('modal-epargne')">×</button></div>
     <div class="modal-body">
-      <div class="field">
-        <label>Nom de l'objectif</label>
-        <input type="text" id="epargne-nom" placeholder="Ex: Voiture, Vacances, Apport maison...">
-      </div>
-      <div class="field mt-md">
-        <label>Montant objectif (€)</label>
-        <input type="number" id="epargne-objectif-input" placeholder="10000">
-      </div>
-      <div class="field mt-md">
-        <label>Déjà épargné avant ce mois (€)</label>
-        <input type="number" id="epargne-deja" placeholder="0">
-        <p class="hint">L'épargne du mois en cours sera automatiquement ajoutée depuis vos mouvements.</p>
-      </div>
+      <div class="field"><label>Nom</label><input type="text" id="epargne-nom" placeholder="Ex: Voiture, Vacances..."></div>
+      <div class="field mt-md"><label>Objectif (€)</label><input type="number" id="epargne-objectif-input" placeholder="10000"></div>
+      <div class="field mt-md"><label>Déjà épargné (€)</label><input type="number" id="epargne-deja" placeholder="0"></div>
     </div>
-    <div class="modal-footer">
-      <button class="btn btn-secondary" data-close="modal-epargne">Annuler</button>
-      <button class="btn btn-primary" onclick="Dashboard.saveEpargne()">Enregistrer</button>
-    </div>
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('modal-epargne')">Annuler</button><button class="btn btn-primary" onclick="saveEpargne()">Enregistrer</button></div>
   </div>
 </div>
 
-<!-- Modal Prélèvement -->
 <div class="modal" id="modal-prelevement">
   <div class="modal-content">
-    <div class="modal-header">
-      <h3 class="modal-title">Ajouter un prélèvement</h3>
-      <button class="modal-close" data-close="modal-prelevement">×</button>
-    </div>
+    <div class="modal-header"><h3 class="modal-title">Ajouter prélèvement</h3><button class="modal-close" onclick="closeModal('modal-prelevement')">×</button></div>
     <div class="modal-body">
-      <div class="field">
-        <label>Nom du prélèvement</label>
-        <input type="text" id="prelevement-nom" placeholder="Ex: Netflix, EDF, Assurance...">
-      </div>
-      <div class="field mt-md">
-        <label>Montant mensuel (€)</label>
-        <input type="number" id="prelevement-montant" placeholder="15.99" step="0.01">
-      </div>
-      <div class="field mt-md">
-        <label>Jour du mois</label>
-        <input type="number" id="prelevement-jour" placeholder="15" min="1" max="31">
-      </div>
+      <div class="field"><label>Nom</label><input type="text" id="prelevement-nom" placeholder="Ex: Netflix, EDF..."></div>
+      <div class="field mt-md"><label>Montant (€)</label><input type="number" id="prelevement-montant" placeholder="15.99" step="0.01"></div>
+      <div class="field mt-md"><label>Jour du mois</label><input type="number" id="prelevement-jour" placeholder="15" min="1" max="31"></div>
     </div>
-    <div class="modal-footer">
-      <button class="btn btn-secondary" data-close="modal-prelevement">Annuler</button>
-      <button class="btn btn-primary" onclick="Dashboard.savePrelevement()">Ajouter</button>
-    </div>
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('modal-prelevement')">Annuler</button><button class="btn btn-primary" onclick="savePrelevement()">Ajouter</button></div>
   </div>
 </div>
 
-<footer class="footer">
-  <a href="tarifs.html">Tarifs</a> ·
-  <a href="test.html">Test gratuit</a> ·
-  <a href="index.html">Accueil</a>
-</footer>
-
 <script src="assets/nav-auth.js"></script>
-<script src="js/dashboard.js?v=5"></script>
+<script>
+var ICONS={revenu:'💵',epargne:'💎',essentiel:'🏠','non-essentiel':'🛍️',imprevu:'🚨'};
+var LABELS={revenu:'Revenu',epargne:'Épargne',essentiel:'Essentielle','non-essentiel':'Non essentielle',imprevu:'Imprévu'};
+var selectedType=null,currentFilter='all',editingId=null;
 
+function formatMoney(n){return new Intl.NumberFormat('fr-FR',{style:'currency',currency:'EUR',minimumFractionDigits:0,maximumFractionDigits:0}).format(n||0)}
+function formatDate(d){return new Date(d).toLocaleDateString('fr-FR',{day:'numeric',month:'short'})}
+function getData(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
+function setData(k,v){localStorage.setItem(k,JSON.stringify(v))}
+function getPlan(){return getData('plan','free')}
+function hasFeature(f){var p=getPlan();if(p==='complete')return true;if(p==='essential'&&(f==='comparateur'||f==='prelevements'))return true;return false}
+function getCurrentMonth(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')}
+function getMovements(){return getData('movements',[])}
+function getMovementsThisMonth(){var m=getCurrentMonth();return getMovements().filter(function(x){return x.date&&x.date.startsWith(m)})}
+
+function calculateStats(){
+  var mvs=getMovementsThisMonth(),s={revenus:0,essentielles:0,nonEssentielles:0,epargne:0,imprevu:0};
+  mvs.forEach(function(m){var a=Math.abs(m.amount||0);if(m.type==='revenu')s.revenus+=a;else if(m.type==='essentiel')s.essentielles+=a;else if(m.type==='non-essentiel')s.nonEssentielles+=a;else if(m.type==='epargne')s.epargne+=a;else if(m.type==='imprevu')s.imprevu+=a});
+  s.totalDepenses=s.essentielles+s.nonEssentielles+s.imprevu;s.resteAVivre=s.revenus-s.totalDepenses-s.epargne;s.totalSorties=s.totalDepenses+s.epargne;return s;
+}
+
+function calculateScore(stats){
+  if(stats.revenus<=0)return{score:0,factors:[]};var score=0,factors=[];
+  var rr=stats.resteAVivre/stats.revenus;
+  if(rr>=0.2){score+=40;factors.push({t:'Reste > 20%',p:true})}else if(rr>=0.1){score+=25;factors.push({t:'Reste 10-20%',p:true})}else if(rr>=0){score+=10;factors.push({t:'Reste faible',p:false})}else{factors.push({t:'Déficit',p:false})}
+  var er=stats.epargne/stats.revenus;if(er>=0.15){score+=30;factors.push({t:'Épargne > 15%',p:true})}else if(er>=0.1){score+=20;factors.push({t:'Épargne 10-15%',p:true})}else if(er>0){score+=10;factors.push({t:'Épargne présente',p:true})}else{factors.push({t:'Pas d\'épargne',p:false})}
+  if(stats.nonEssentielles/stats.revenus<=0.15){score+=15;factors.push({t:'Non-ess. OK',p:true})}else if(stats.nonEssentielles/stats.revenus>0.25){factors.push({t:'Non-ess. élevées',p:false})}
+  if(stats.imprevu===0){score+=10;factors.push({t:'Pas d\'imprévu',p:true})}else{factors.push({t:'Imprévu: '+formatMoney(stats.imprevu),p:false})}
+  if(getMovementsThisMonth().length>=5)score+=5;
+  return{score:Math.min(100,Math.max(0,score)),factors:factors};
+}
+
+function getScoreInfo(s){if(s>=70)return{label:'Excellente santé',cls:'success'};if(s>=50)return{label:'Bonne gestion',cls:'success'};if(s>=30)return{label:'À surveiller',cls:'warning'};return{label:'Attention',cls:'danger'}}
+
+function renderAll(){
+  var stats=calculateStats(),scoreData=calculateScore(stats),info=getScoreInfo(scoreData.score);
+  // Diagnostic
+  var dc=document.getElementById('diagnostic-card'),di=document.getElementById('diagnostic-icon'),dt=document.getElementById('diagnostic-text'),ds=document.getElementById('diagnostic-sub');
+  if(stats.revenus===0){dc.className='diagnostic-card';di.textContent='📝';dt.textContent='Commencez par ajouter vos revenus';ds.textContent='Allez dans Mouvements et ajoutez votre salaire.'}
+  else if(stats.resteAVivre<0){dc.className='diagnostic-card danger';di.textContent='🚨';dt.textContent='Déficit de '+formatMoney(Math.abs(stats.resteAVivre));ds.textContent='Réduisez les non-essentielles en priorité.'}
+  else if(stats.resteAVivre/stats.revenus<0.1){dc.className='diagnostic-card warning';di.textContent='⚠️';dt.textContent='Budget serré: '+formatMoney(stats.resteAVivre)+' de marge';ds.textContent='Un imprévu de 300€ serait difficile.'}
+  else if(stats.epargne===0){dc.className='diagnostic-card';di.textContent='💡';dt.textContent='Marge de '+formatMoney(stats.resteAVivre);ds.textContent='Pensez à épargner une partie.'}
+  else{dc.className='diagnostic-card';di.textContent='✅';dt.textContent='Situation saine: '+formatMoney(stats.resteAVivre)+' dispo';ds.textContent='Vous épargnez '+formatMoney(stats.epargne)+'/mois. Continuez!'}
+  // Stats
+  document.getElementById('stat-revenus').textContent=formatMoney(stats.revenus);
+  document.getElementById('stat-essentielles').textContent=formatMoney(stats.essentielles);
+  document.getElementById('stat-non-essentielles').textContent=formatMoney(stats.nonEssentielles);
+  var re=document.getElementById('stat-reste');re.textContent=formatMoney(stats.resteAVivre);re.className='stat-value '+(stats.resteAVivre>=0?'positive':'negative');
+  // Score
+  document.getElementById('score-number').textContent=scoreData.score;
+  var c=2*Math.PI*70,circ=document.getElementById('score-circle');circ.style.strokeDashoffset=c-(scoreData.score/100)*c;circ.className='score-circle-fill'+(scoreData.score<50?(scoreData.score<30?' danger':' warning'):'');
+  var badge=document.getElementById('score-badge');badge.textContent=info.label;badge.className='badge '+info.cls;
+  var fl=document.getElementById('score-factors-list'),fh='';scoreData.factors.forEach(function(f){fh+='<div class="score-factor '+(f.p?'positive':'negative')+'">'+(f.p?'✓ ':'✗ ')+f.t+'</div>'});fl.innerHTML=fh;
+  // Missions
+  var mvs=getMovementsThisMonth(),missions=[{text:'Ajouter revenus',impact:'+20 pts',done:stats.revenus>0,pts:20},{text:'5 mouvements',impact:'Meilleure visibilité',done:mvs.length>=5,pts:15},{text:'Épargner ce mois',impact:'+30 pts max',done:stats.epargne>0,pts:25}];
+  var ml=document.getElementById('missions-list'),mh='',mc=0;missions.forEach(function(m){if(m.done)mc++;mh+='<div class="mission'+(m.done?' completed':'')+'"><div class="mission-check">'+(m.done?'✓':'')+'</div><div class="mission-content"><div class="mission-text">'+m.text+'</div><div class="mission-impact">'+m.impact+'</div></div><div class="mission-points">+'+m.pts+'</div></div>'});ml.innerHTML=mh;document.getElementById('missions-progress').textContent=mc+'/3';
+  // Épargne
+  var obj=getData('epargneObjectif',{nom:'',montant:0,dejaEpargne:0}),te=(obj.dejaEpargne||0)+stats.epargne;
+  document.getElementById('epargne-objectif-text').textContent=obj.nom?obj.nom+' — '+formatMoney(obj.montant):'Aucun objectif défini';
+  var pct=obj.montant>0?Math.min(100,Math.round((te/obj.montant)*100)):0;document.getElementById('epargne-progress').style.width=pct+'%';
+  document.getElementById('epargne-total').textContent=formatMoney(te);document.getElementById('epargne-mois').textContent=formatMoney(stats.epargne);
+  var rest=Math.max(0,(obj.montant||0)-te);document.getElementById('epargne-restant').textContent=formatMoney(rest);document.getElementById('epargne-conseille').textContent=formatMoney(rest>0?Math.ceil(rest/12):0);
+  // Projection
+  var pc=document.getElementById('projection-container');if(mvs.length>=3&&stats.revenus>0){pc.style.display='block';var dp=new Date().getDate(),dl=new Date(new Date().getFullYear(),new Date().getMonth()+1,0).getDate()-dp,dr=(stats.totalDepenses/dp)*dl,pr=stats.revenus-stats.totalDepenses-dr-stats.epargne;document.getElementById('projection-value').textContent=formatMoney(pr);document.getElementById('projection-value').style.color=pr>=0?'#0d9f6f':'#dc2626';document.getElementById('projection-days').textContent=dl+' jours restants'}else{pc.style.display='none'}
+  // Last test
+  renderLastTest();
+  // Movements
+  renderMovements();
+  // Month summary
+  document.getElementById('resume-entrees').textContent='+'+formatMoney(stats.revenus);document.getElementById('resume-sorties').textContent='-'+formatMoney(stats.totalSorties);
+  var sol=document.getElementById('resume-solde'),sv=stats.revenus-stats.totalSorties;sol.textContent=formatMoney(sv);sol.className='summary-value '+(sv>=0?'positive':'negative');
+  // Tools
+  document.getElementById('tool-comparateur').classList.toggle('locked',!hasFeature('comparateur'));
+  document.getElementById('tool-simulateur').classList.toggle('locked',!hasFeature('simulateur'));
+  document.getElementById('tool-prelevements').classList.toggle('locked',!hasFeature('prelevements'));
+  renderPrelevements();
+}
+
+function renderLastTest(){
+  var c=document.getElementById('last-test-container'),t=getData('lastTest',null);
+  if(!t){c.innerHTML='<div style="text-align:center;padding:32px"><div style="font-size:48px;margin-bottom:16px">📝</div><p style="font-weight:600;margin-bottom:8px">Aucun test réalisé</p><p style="color:#6b7280;margin-bottom:16px">Faites le test pour une première évaluation</p><a href="test.html" class="btn btn-primary">Faire le test</a></div>';return}
+  var si=getScoreInfo(t.score);
+  c.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px"><h3>📊 Dernier test</h3><span style="font-size:14px;color:#6b7280">'+new Date(t.date).toLocaleDateString('fr-FR')+'</span></div><div class="grid-4" style="gap:12px;margin-bottom:16px"><div class="mini-card"><div class="mini-title">Revenus</div><div class="mini-value">'+formatMoney(t.revenus)+'</div></div><div class="mini-card"><div class="mini-title">Essentielles</div><div class="mini-value" style="color:#111">'+formatMoney(t.depensesEssentielles)+'</div></div><div class="mini-card"><div class="mini-title">Non-ess.</div><div class="mini-value" style="color:#f59e0b">'+formatMoney(t.depensesNonEssentielles)+'</div></div><div class="mini-card"><div class="mini-title">Reste</div><div class="mini-value">'+formatMoney(t.resteAVivre)+'</div></div></div><div style="display:flex;align-items:center;gap:16px;margin-bottom:16px"><div style="text-align:center"><div style="font-size:32px;font-weight:800">'+t.score+'</div><div style="font-size:11px;color:#6b7280">/100</div></div><div style="flex:1"><span class="badge '+si.cls+'">'+si.label+'</span><p style="font-size:14px;color:#6b7280;margin-top:8px">'+(t.conseil||'')+'</p></div></div><div style="display:flex;gap:12px;flex-wrap:wrap"><a href="test.html" class="btn btn-primary">🔄 Refaire</a><button class="btn btn-ghost" onclick="deleteTest()">🗑️ Supprimer</button></div>';
+}
+
+function renderMovements(){
+  var mvs=getMovementsThisMonth();if(currentFilter!=='all')mvs=mvs.filter(function(m){return m.type===currentFilter});
+  mvs.sort(function(a,b){return new Date(b.date)-new Date(a.date)});
+  var c=document.getElementById('movement-list');
+  if(mvs.length===0){c.innerHTML='<div class="empty-state"><div class="empty-state-icon">📝</div><p style="font-weight:600;margin-bottom:8px">Aucun mouvement</p><p>Commencez à ajouter vos revenus et dépenses</p><button class="btn btn-primary" style="margin-top:16px" onclick="openModal(\'modal-movement\')">+ Ajouter</button></div>';return}
+  var h='';mvs.forEach(function(m){var ip=m.type==='revenu';h+='<div class="movement"><div class="movement-icon '+m.type+'">'+(ICONS[m.type]||'📦')+'</div><div class="movement-info"><div class="movement-title">'+(m.desc||LABELS[m.type])+'</div><div class="movement-meta">'+LABELS[m.type]+' · '+formatDate(m.date)+'</div></div><div class="movement-amount '+(ip?'positive':'negative')+'">'+(ip?'+':'-')+formatMoney(Math.abs(m.amount))+'</div><button class="movement-btn" onclick="editMovement(\''+m.id+'\')">✏️</button><button class="movement-btn delete" onclick="removeMovement(\''+m.id+'\')">🗑️</button></div>'});
+  c.innerHTML=h;
+}
+
+function renderPrelevements(){
+  var list=getData('prelevements',[]),c=document.getElementById('prelevements-list');
+  if(list.length===0){c.innerHTML='<div style="text-align:center;padding:24px;color:#6b7280">Aucun prélèvement</div>';document.getElementById('prelevements-total').textContent='0 €';return}
+  list.sort(function(a,b){return a.jour-b.jour});var mois=['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'],now=new Date(),total=0,h='';
+  list.forEach(function(p,i){total+=p.montant;h+='<div class="prelevement"><div class="prelevement-date"><div class="prelevement-day">'+p.jour+'</div><div class="prelevement-month">'+mois[now.getMonth()]+'</div></div><div class="prelevement-info"><div class="prelevement-name">'+p.nom+'</div></div><div class="prelevement-amount">-'+formatMoney(p.montant)+'</div><button class="movement-btn delete" onclick="removePrelevement('+i+')">🗑️</button></div>'});
+  c.innerHTML=h;document.getElementById('prelevements-total').textContent=formatMoney(total);
+}
+
+function showTab(name){document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active')});document.querySelectorAll('.tab-content').forEach(function(c){c.classList.remove('active')});event.target.classList.add('active');document.getElementById('tab-'+name).classList.add('active')}
+function openModal(id){document.getElementById(id).classList.add('open');if(id==='modal-movement'){document.getElementById('movement-date').value=new Date().toISOString().split('T')[0];editingId=null;document.getElementById('modal-movement-title').textContent='Ajouter un mouvement'}if(id==='modal-epargne'){var o=getData('epargneObjectif',{});document.getElementById('epargne-nom').value=o.nom||'';document.getElementById('epargne-objectif-input').value=o.montant||'';document.getElementById('epargne-deja').value=o.dejaEpargne||''}}
+function closeModal(id){document.getElementById(id).classList.remove('open');if(id==='modal-movement'){selectedType=null;editingId=null;document.querySelectorAll('.type-option').forEach(function(o){o.classList.remove('selected')});document.getElementById('movement-desc').value='';document.getElementById('movement-amount').value=''}}
+function selectType(type,el){selectedType=type;document.querySelectorAll('.type-option').forEach(function(o){o.classList.remove('selected')});el.classList.add('selected')}
+function filterMovements(f,btn){currentFilter=f;document.querySelectorAll('.filter-btn').forEach(function(b){b.classList.remove('active')});btn.classList.add('active');renderMovements()}
+
+function saveMovement(){
+  if(!selectedType){alert('Sélectionnez un type');return}
+  var d=document.getElementById('movement-desc').value.trim(),a=parseFloat(document.getElementById('movement-amount').value)||0,dt=document.getElementById('movement-date').value;
+  if(a<=0){alert('Entrez un montant valide');return}if(!dt){alert('Sélectionnez une date');return}
+  var mvs=getMovements();
+  if(editingId){var idx=mvs.findIndex(function(m){return m.id===editingId});if(idx!==-1)mvs[idx]={id:editingId,type:selectedType,desc:d||LABELS[selectedType],amount:a,date:dt}}
+  else{mvs.push({id:'mv_'+Date.now(),type:selectedType,desc:d||LABELS[selectedType],amount:a,date:dt})}
+  setData('movements',mvs);closeModal('modal-movement');renderAll();
+}
+
+function editMovement(id){
+  var mvs=getMovements(),m=mvs.find(function(x){return x.id===id});if(!m)return;
+  editingId=id;selectedType=m.type;
+  document.getElementById('modal-movement-title').textContent='Modifier';
+  document.getElementById('movement-desc').value=m.desc||'';document.getElementById('movement-amount').value=m.amount||'';document.getElementById('movement-date').value=m.date||'';
+  document.querySelectorAll('.type-option').forEach(function(o){o.classList.toggle('selected',o.textContent.includes(ICONS[m.type]))});
+  openModal('modal-movement');
+}
+
+function removeMovement(id){if(!confirm('Supprimer ?'))return;var mvs=getMovements().filter(function(m){return m.id!==id});setData('movements',mvs);renderAll()}
+function saveEpargne(){var n=document.getElementById('epargne-nom').value.trim(),m=parseFloat(document.getElementById('epargne-objectif-input').value)||0,d=parseFloat(document.getElementById('epargne-deja').value)||0;setData('epargneObjectif',{nom:n,montant:m,dejaEpargne:d});closeModal('modal-epargne');renderAll()}
+function savePrelevement(){var n=document.getElementById('prelevement-nom').value.trim(),m=parseFloat(document.getElementById('prelevement-montant').value)||0,j=parseInt(document.getElementById('prelevement-jour').value)||1;if(!n||m<=0){alert('Remplissez les champs');return}var l=getData('prelevements',[]);l.push({nom:n,montant:m,jour:j});setData('prelevements',l);document.getElementById('prelevement-nom').value='';document.getElementById('prelevement-montant').value='';document.getElementById('prelevement-jour').value='';closeModal('modal-prelevement');renderAll()}
+function removePrelevement(i){if(!confirm('Supprimer ?'))return;var l=getData('prelevements',[]);l.splice(i,1);setData('prelevements',l);renderAll()}
+function deleteTest(){if(!confirm('Supprimer le test ?'))return;localStorage.removeItem('lastTest');var t=getData('tests',[]);if(t.length>0){t.pop();setData('tests',t);if(t.length>0)setData('lastTest',t[t.length-1])}renderAll()}
+
+function comparer(){
+  var nA=document.getElementById('compare-a-nom').value||'Choix A',cA=parseFloat(document.getElementById('compare-a-cout').value)||0,dA=parseInt(document.getElementById('compare-a-duree').value)||1;
+  var nB=document.getElementById('compare-b-nom').value||'Choix B',cB=parseFloat(document.getElementById('compare-b-cout').value)||0,dB=parseInt(document.getElementById('compare-b-duree').value)||1;
+  var tA=cA*dA,tB=cB*dB,diff=Math.abs(tA-tB),stats=calculateStats(),nrA=stats.resteAVivre-cA,nrB=stats.resteAVivre-cB;
+  var h='<h4 style="margin-bottom:16px">📊 Résultat</h4><div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px"><div style="text-align:center;padding:16px;background:rgba(13,159,111,0.1);border-radius:8px"><div style="font-size:12px">'+nA+'</div><div style="font-size:24px;font-weight:700;color:#0d9f6f">'+formatMoney(tA)+'</div></div><div style="text-align:center;padding:16px;background:rgba(59,130,246,0.1);border-radius:8px"><div style="font-size:12px">'+nB+'</div><div style="font-size:24px;font-weight:700;color:#3b82f6">'+formatMoney(tB)+'</div></div></div>';
+  h+='<div style="text-align:center;padding:16px;background:#fff;border:1px solid #e5e7eb;border-radius:8px"><div style="font-size:12px;color:#6b7280">Différence</div><div style="font-size:28px;font-weight:700">'+formatMoney(diff)+'</div>';
+  if(tA!==tB)h+='<div style="color:#0d9f6f;font-weight:600;margin-top:8px">✅ '+(tA<tB?nA:nB)+' est plus économique</div>';
+  h+='</div><div style="margin-top:16px;padding:16px;background:#f3f4f6;border-radius:8px"><div style="font-size:12px;font-weight:600;margin-bottom:8px">IMPACT BUDGET</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><div>'+nA+': <strong style="color:'+(nrA>=0?'#0d9f6f':'#dc2626')+'">'+formatMoney(nrA)+'</strong>/mois</div><div>'+nB+': <strong style="color:'+(nrB>=0?'#0d9f6f':'#dc2626')+'">'+formatMoney(nrB)+'</strong>/mois</div></div></div>';
+  document.getElementById('compare-result').innerHTML=h;document.getElementById('compare-result').style.display='block';
+}
+
+function simuler(){
+  var stats=calculateStats();if(stats.revenus<=0){alert('Ajoutez d\'abord vos revenus');return}
+  var m=parseFloat(document.getElementById('imprevu-montant').value)||0,ms=parseInt(document.getElementById('imprevu-mois').value)||1;if(m<=0){alert('Entrez un montant');return}
+  var cm=m/ms,nr=stats.resteAVivre-cm,st,ic,ti,msg;
+  if(nr>=stats.resteAVivre*0.5){st='success';ic='✅';ti='Absorbable';msg='Votre budget peut gérer.'}
+  else if(nr>=0){st='warning';ic='⚠️';ti='Tendu';msg='Faisable mais serré.'}
+  else{st='danger';ic='❌';ti='Critique';msg='Dépasse votre capacité.'}
+  document.getElementById('simulateur-result').innerHTML='<div class="simulation-result '+st+'"><div style="display:flex;align-items:center;gap:16px;margin-bottom:16px"><span style="font-size:40px">'+ic+'</span><div><div style="font-size:18px;font-weight:700">'+ti+'</div><div style="color:#6b7280">'+msg+'</div></div></div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px"><div style="text-align:center;padding:12px;background:rgba(255,255,255,0.7);border-radius:8px"><div style="font-size:11px">Reste actuel</div><div style="font-size:20px;font-weight:700">'+formatMoney(stats.resteAVivre)+'</div></div><div style="text-align:center;padding:12px;background:rgba(255,255,255,0.7);border-radius:8px"><div style="font-size:11px">Coût/mois</div><div style="font-size:20px;font-weight:700;color:#dc2626">-'+formatMoney(cm)+'</div></div><div style="text-align:center;padding:12px;background:rgba(255,255,255,0.7);border-radius:8px"><div style="font-size:11px">Nouveau reste</div><div style="font-size:20px;font-weight:700;color:'+(nr>=0?'#0d9f6f':'#dc2626')+'">'+formatMoney(nr)+'</div></div></div></div>';
+}
+
+// Init
+(function(){
+  try{var s=JSON.parse(localStorage.getItem('auth_session_v1'));if(!s||!s.email){window.location.replace('login.html');return}}catch(e){window.location.replace('login.html');return}
+  renderAll();
+  // Close modals on backdrop click
+  document.querySelectorAll('.modal').forEach(function(m){m.addEventListener('click',function(e){if(e.target===this)closeModal(this.id)})});
+})();
+</script>
 </body>
 </html>
