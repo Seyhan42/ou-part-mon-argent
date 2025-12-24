@@ -242,55 +242,71 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // === EVENT LISTENERS POUR MOBILE ===
   
-  // Navigation sidebar
-  document.querySelectorAll('.sidebar-link[data-section]').forEach(link => {
+  // Navigation sidebar - utiliser click uniquement (fonctionne sur mobile aussi)
+  document.querySelectorAll('.sidebar-link[data-section]').forEach(function(link) {
     link.addEventListener('click', function(e) {
       e.preventDefault();
-      showSection(this.dataset.section);
-    });
-    // Support tactile
-    link.addEventListener('touchend', function(e) {
-      e.preventDefault();
-      showSection(this.dataset.section);
+      e.stopPropagation();
+      var section = this.getAttribute('data-section');
+      if (section) showSection(section);
     });
   });
   
   // Actions rapides
-  document.querySelectorAll('.action-link[data-target]').forEach(link => {
+  document.querySelectorAll('.action-link[data-target]').forEach(function(link) {
     link.addEventListener('click', function(e) {
       e.preventDefault();
-      showSection(this.dataset.target);
+      e.stopPropagation();
+      var target = this.getAttribute('data-target');
+      if (target) showSection(target);
     });
   });
   
   // Boutons modals
-  document.getElementById('btn-versement')?.addEventListener('click', () => openModal('modal-versement'));
-  document.getElementById('btn-objectif')?.addEventListener('click', () => openModal('modal-objectif'));
-  document.getElementById('btn-abonnement')?.addEventListener('click', () => openModal('modal-abonnement'));
-  document.getElementById('btn-jeux')?.addEventListener('click', () => openModal('modal-jeux'));
+  var btnVersement = document.getElementById('btn-versement');
+  var btnObjectif = document.getElementById('btn-objectif');
+  var btnAbonnement = document.getElementById('btn-abonnement');
+  var btnJeux = document.getElementById('btn-jeux');
+  
+  if (btnVersement) btnVersement.addEventListener('click', function() { openModal('modal-versement'); });
+  if (btnObjectif) btnObjectif.addEventListener('click', function() { openModal('modal-objectif'); });
+  if (btnAbonnement) btnAbonnement.addEventListener('click', function() { openModal('modal-abonnement'); });
+  if (btnJeux) btnJeux.addEventListener('click', function() { openModal('modal-jeux'); });
   
   // Boutons save
-  document.getElementById('btn-save-versement')?.addEventListener('click', saveVersement);
-  document.getElementById('btn-save-objectif')?.addEventListener('click', saveObjectif);
-  document.getElementById('btn-save-abonnement')?.addEventListener('click', saveAbonnement);
-  document.getElementById('btn-save-jeux')?.addEventListener('click', saveJeux);
+  var btnSaveVersement = document.getElementById('btn-save-versement');
+  var btnSaveObjectif = document.getElementById('btn-save-objectif');
+  var btnSaveAbonnement = document.getElementById('btn-save-abonnement');
+  var btnSaveJeux = document.getElementById('btn-save-jeux');
+  
+  if (btnSaveVersement) btnSaveVersement.addEventListener('click', saveVersement);
+  if (btnSaveObjectif) btnSaveObjectif.addEventListener('click', saveObjectif);
+  if (btnSaveAbonnement) btnSaveAbonnement.addEventListener('click', saveAbonnement);
+  if (btnSaveJeux) btnSaveJeux.addEventListener('click', saveJeux);
   
   // Boutons fermer modals
-  document.querySelectorAll('[data-close]').forEach(btn => {
+  document.querySelectorAll('[data-close]').forEach(function(btn) {
     btn.addEventListener('click', function() {
-      closeModal(this.dataset.close);
+      var modalId = this.getAttribute('data-close');
+      if (modalId) closeModal(modalId);
     });
   });
   
   // Comparateur et Simulateur
-  document.getElementById('btn-comparer')?.addEventListener('click', comparerChoix);
-  document.getElementById('btn-simuler')?.addEventListener('click', simulerImprevu);
-  document.getElementById('btn-rappel')?.addEventListener('click', saveRappel);
+  var btnComparer = document.getElementById('btn-comparer');
+  var btnSimuler = document.getElementById('btn-simuler');
+  var btnRappel = document.getElementById('btn-rappel');
+  
+  if (btnComparer) btnComparer.addEventListener('click', comparerChoix);
+  if (btnSimuler) btnSimuler.addEventListener('click', simulerImprevu);
+  if (btnRappel) btnRappel.addEventListener('click', saveRappel);
   
   // Fermer modal en cliquant sur le fond
-  document.querySelectorAll('.modal').forEach(modal => {
+  document.querySelectorAll('.modal').forEach(function(modal) {
     modal.addEventListener('click', function(e) {
       if (e.target === this) closeModal(this.id);
     });
   });
+  
+  console.log('Dashboard initialisé');
 });
